@@ -1,5 +1,7 @@
+.gitignore
 venv
 Include
 Lib
 Scripts
 pyvenv.cfg
+EWR_Builder_v8.1.py
