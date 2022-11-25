@@ -12,6 +12,8 @@
 # ie an about page could contain a paragraph and not be needed in the code itself
 ## Note end
 
+from functions import *
+
 
 import tkinter as tk
 from tkinter import * # remove * and add used functions later
@@ -27,7 +29,7 @@ import numpy as np
 root = Tk()
 
 root.title('Multifunction Staistics Tool')
-root.state('zoomed')
+# root.state('zoomed') # expands window
 
 window_height = 600
 window_width = 700
@@ -42,6 +44,16 @@ root.geometry('{}x{}+{}+{}'.format(window_width, window_height, x_coordinate, y_
 
 # root.geometry('500x500') # use this if above doesnt work
 root.pack_propagate(False)
+
+
+col_options_list = ['Col 1', 'Col 2', 'Col 3'] # this will be the columns from input csv
+var_col_choice = StringVar()
+var_col_choice.set(col_options_list[0])
+
+normalize_stationary_bool = IntVar(value=0)
+rmv_stationary_bool = IntVar(value=0)
+
+
 
 
 def clear_page():
@@ -148,17 +160,35 @@ def clear_treeview(trees: list, lables: list):
     return None
 
 
-# ** why do we need [treeview] and [file_label]? Linked to clear_treeview
-# Insert a good ol', "I dont know why it works, but it does" (refering to the [treeview] and why it needs [])
-def select_file_window(treeview: list, file_label):
+def file_select_window(treeview: list, file_label):
+    # Used for generic files without necessary formatting (sectors.csv)
     clear_treeview([treeview], [file_label])
 
     file = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
                                                                         ('All Files', '*.*')))
     if file == '' or file is None:
         return None
-    else:
-        pass
+
+    df_input = pd.read_csv(file, encoding='ISO-8859-1').reset_index(drop=True)
+
+    display_csv(treeview, df_input)
+
+    return None
+
+
+# ** why do we need [treeview] and [file_label]? Linked to clear_treeview
+# Insert a good ol', "I dont know why it works, but it does" (refering to the [treeview] and why it needs [])
+def select_datafile_window(treeview: list, file_label):
+    # used to select datafiles from racestudio
+    
+    clear_treeview([treeview], [file_label])
+
+    file = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
+                                                                        ('All Files', '*.*')))
+    if file == '' or file is None:
+        return None
+    # else:
+    #     pass
         # file_data.delete(*file_data.get_children()) # unpack all rows
 
     df_input = pd.read_fwf(file, header=None, encoding='ISO-8859-1').reset_index(drop=True)
@@ -166,8 +196,30 @@ def select_file_window(treeview: list, file_label):
     leading_label = file_label['text'].split(':')[0] + ':'
     file_label['text'] = f'{leading_label} {file}'
 
-    # ** Create function to import dataframe into treeview
-    display_csv(treeview, df_input)
+    df_data = format_data(df_input)
+    display_csv(treeview, df_data)
+
+    # ** fix/convert to function later
+    # if is_col_choice:
+    try:
+        print('test')
+        # https://stackoverflow.com/questions/17580218/changing-the-options-of-a-optionmenu-when-clicking-a-button
+        # Answer from: user2555451
+        optionmenu_var_col['menu'].delete(0, 'end')
+
+        # Insert list of new options (tk._setit hooks them up to var)
+        new_cols = df_data.columns
+        for col in new_cols:
+            optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(var_col_choice, col))
+
+        var_col_choice.set(new_cols[-1])
+        print('Updated Option Menu')
+
+
+    except:
+        pass
+        # update_col_option_menu()
+
 
     return None
 
@@ -231,10 +283,10 @@ def limp_mode_page():
     treescrolly.pack(side='right', fill='y')    
     
     ## Main Buttons
-    button1 = Button(button_frame, text='Oil File 1', command=lambda: select_file_window(tree1_data, filepath_label1))
+    button1 = Button(button_frame, text='Oil File 1', command=lambda: select_datafile_window(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
-    button2 = Button(button_frame, text='Oil File 2', command=lambda: select_file_window(tree2_data, filepath_label2))
+    button2 = Button(button_frame, text='Oil File 2', command=lambda: select_datafile_window(tree2_data, filepath_label2))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
     button3 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1, filepath_label2]))
@@ -422,7 +474,7 @@ def coastdown_page():
     treescrolly.pack(side='right', fill='y')    
     
     ## Main Buttons
-    button1 = Button(button_frame, text='Data File', command=lambda: select_file_window(tree1_data, filepath_label1))
+    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile_window(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
     button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
@@ -457,6 +509,8 @@ def coastdown_page():
     
 
 def basic_stats_page():
+    global optionmenu_var_col
+
     clear_page()
     # main_btn() 
     # ** either make main_btn() work with the grid; make this so its always 
@@ -510,7 +564,7 @@ def basic_stats_page():
     treescrolly.pack(side='right', fill='y')    
     
     ## Main Buttons
-    button1 = Button(button_frame, text='Data File', command=lambda: select_file_window(tree1_data, filepath_label1))
+    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile_window(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
     button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
@@ -519,24 +573,19 @@ def basic_stats_page():
     button3 = Button(button_frame, text='Process Data', command=lambda: False)
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
-    # ** Needs work
-    param_options_list = ['Col 1', 'Col 2', 'Col 3'] # this will be the columns from input csv
-    var = StringVar()
-    var.set(param_options_list[0])
-    # parm_options_list this list variable could update when a file is inputed and filled in with available columns
-    optionmenu_format1 = OptionMenu(button_frame, var, *param_options_list, command=lambda x: print(f'OptionMenu: {x}'))
-    optionmenu_format1.place(y=70, relx=.75, anchor=CENTER)
+    ## Options
+    # col_options_list; this list variable could update when a file is inputed and filled in with available columns
+    optionmenu_var_col = OptionMenu(button_frame, var_col_choice, *col_options_list, command=lambda x: print(f'OptionMenu: {x}'))
+    optionmenu_var_col.place(y=70, relx=.75, anchor=CENTER)
 
-    var1_temp = IntVar(value=1)
-    var2_temp = IntVar(value=1)
     checkbox_normalize = Checkbutton(button_frame, text='Normalize stationary Values (description)', 
-                            variable=var1_temp, onvalue=1, offvalue=0, justify=LEFT)
+                            variable=normalize_stationary_bool, onvalue=1, offvalue=0, justify=LEFT)
     checkbox_normalize.place(y=122, relx=.5, anchor=CENTER)
 
-    checkbox_remove_stationary = Checkbutton(button_frame, text='Remove stationary values (description)    ', 
-                            variable=var2_temp, onvalue=1, offvalue=0, justify=LEFT)
-    checkbox_remove_stationary.place(y=142, relx=.5, anchor=CENTER)
-
+    checkbox_rmv_stationary = Checkbutton(button_frame, text='Remove stationary values (description)    ', 
+                            variable=rmv_stationary_bool, onvalue=1, offvalue=0, justify=LEFT)
+    checkbox_rmv_stationary.place(y=142, relx=.5, anchor=CENTER)
+    
     ## Statistics
     filepath_label1 = Label(info_frame, text='File 1: ', wraplength=450, justify=LEFT)
     filepath_label1.place(y=10, x=10)
@@ -559,6 +608,8 @@ def basic_stats_page():
 
 
 def sector_analysis_page():
+    global optionmenu_var_col
+
     clear_page()
     # main_btn() 
     # ** either make main_btn() work with the grid; make this so its always 
@@ -613,10 +664,10 @@ def sector_analysis_page():
     treescrolly.pack(side='right', fill='y')    
     
     ## Main Buttons
-    button1 = Button(button_frame, text='Data File', command=lambda: select_file_window(tree1_data, filepath_label1))
+    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile_window(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
-    button2 = Button(button_frame, text='Sectors File', command=lambda: select_file_window(tree2_data, filepath_label2))
+    button2 = Button(button_frame, text='Sectors File', command=lambda: file_select_window(tree2_data, filepath_label2))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
     button3 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1, filepath_label2]))
@@ -624,7 +675,19 @@ def sector_analysis_page():
 
     button4 = Button(button_frame, text='Process Data', command=lambda: False)
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
-    
+
+    ## Options
+    optionmenu_var_col = OptionMenu(button_frame, var_col_choice, *col_options_list, command=lambda x: print(f'OptionMenu: {x}'))
+    optionmenu_var_col.place(y=110, relx=.25, anchor=CENTER)
+
+    checkbox_normalize = Checkbutton(button_frame, text='Normalize stationary\nvalues (description)', 
+                            variable=normalize_stationary_bool, onvalue=1, offvalue=0, justify=LEFT)
+    checkbox_normalize.place(y=110, relx=.75, anchor=CENTER)
+
+    checkbox_rmv_stationary = Checkbutton(button_frame, text='Remove stationary\nvalues (description)    ', 
+                            variable=rmv_stationary_bool, onvalue=1, offvalue=0, justify=LEFT)
+    checkbox_rmv_stationary.place(y=150, relx=.75, anchor=CENTER)
+
     ## Statistics
     filepath_label1 = Label(info_frame, text='File 1: ', wraplength=450, justify=LEFT)
     filepath_label1.place(y=10, x=10)
