@@ -1,4 +1,5 @@
 import constants as c
+from gui import var_col_choice, normalize_stationary_bool, rmv_stationary_bool 
 
 import pandas as pd
 import numpy as np
@@ -539,16 +540,16 @@ def downforce_analysis(df):
 
         # normalization_input = prompt_input_options(normalization_options_list)
         # if normalization_input == normalization_options_list[0]:
-        df_data = stationary_normalization(df, FL_FORCE_COL, rmv_stationary_tf)
-        df_data = stationary_normalization(df, FR_FORCE_COL, rmv_stationary_tf)
-        df_data = stationary_normalization(df, RL_FORCE_COL, rmv_stationary_tf)
-        df_data = stationary_normalization(df, RR_FORCE_COL, rmv_stationary_tf)
+        df_data = stationary_normalization(df, c.FL_FORCE_COL, rmv_stationary_tf)
+        df_data = stationary_normalization(df, c.FR_FORCE_COL, rmv_stationary_tf)
+        df_data = stationary_normalization(df, c.RL_FORCE_COL, rmv_stationary_tf)
+        df_data = stationary_normalization(df, c.RR_FORCE_COL, rmv_stationary_tf)
         
         df_downforce = coast_down(df_data)
 
         # plots_list = []
         # for col in FORCE_COLS:
-        plot = var1_vs_var2_graph(df_downforce, SPEED_COL, DOWNFORCE_COL, plot_type='scatter', marker='o', single_plot_t_f=True)
+        plot = var1_vs_var2_graph(df_downforce, c.SPEED_COL, c.DOWNFORCE_COL, plot_type='scatter', marker='o', single_plot_t_f=True)
             # plots_list.append(plot)
         
         coastdown_output_pdf = matplotlib.backends.backend_pdf.PdfPages(coastdown_pdf_path)

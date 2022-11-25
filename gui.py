@@ -55,7 +55,6 @@ rmv_stationary_bool = IntVar(value=0)
 
 
 
-
 def clear_page():
     for widget in root.winfo_children():
         widget.destroy()
@@ -180,7 +179,7 @@ def file_select_window(treeview: list, file_label):
 # Insert a good ol', "I dont know why it works, but it does" (refering to the [treeview] and why it needs [])
 def select_datafile_window(treeview: list, file_label):
     # used to select datafiles from racestudio
-    
+
     clear_treeview([treeview], [file_label])
 
     file = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
