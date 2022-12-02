@@ -538,7 +538,7 @@ def sector_analysis():
 
 def sector_analysis_v2(df_data, df_sectors, col, normalize_stationary_bool, rmv_stationary_bool):
     # Sector analysis by time interval
-    # ** Future: Time or Distance interval 
+    # ** Future: Add Time or Distance interval 
     # (Distance could be easier since corners will always be the same distance from 
     # the start becon assuming there are no off tracks)
     df_new_data = sector_dataframe_v2(df_data, df_sectors)

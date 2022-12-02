@@ -9,7 +9,7 @@
 # To do:
 # - Create function to create treeviews (decluter)
 # - Create helper functions for other analysis functions
-# - 
+# - Look into classes and reformatting GUI structure
 
 ####################################################################
 # UConn Formula SAE
