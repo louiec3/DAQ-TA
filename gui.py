@@ -1,3 +1,16 @@
+# Problem 
+# Cannot have two files dependant on each other.
+# functions.py cannot import variables from gui.py (for the IntVars/StringVars)
+# while gui.py imports functions.py...
+# Need solution
+# Solution: Use the GUI variables as data inputs, do not reference in functions.py
+# Create helper functions to create and store the dataframe variables
+
+# To do:
+# - Create function to create treeviews (decluter)
+# - Create helper functions for other analysis functions
+# - 
+
 ####################################################################
 # UConn Formula SAE
 # Data Acquisition - Multifunction Analysis Tool
@@ -130,6 +143,8 @@ def main_btn():
 
 
 def display_csv(treeview, df):
+    print(type(df))
+    print(list(df.columns))
     ## Code to display dataframe in tree-view
     treeview['columns'] = list(df.columns) # ex) data['attribute']
     treeview['show'] = 'headings'
@@ -175,12 +190,13 @@ def file_select_window(treeview: list, file_label):
     return None
 
 
-# ** why do we need [treeview] and [file_label]? Linked to clear_treeview
-# Insert a good ol', "I dont know why it works, but it does" (refering to the [treeview] and why it needs [])
+
 def select_datafile_window(treeview: list, file_label):
     # used to select datafiles from racestudio
+    ## ** is there another way to use the df_data instead of makeing it global?
+    global df_data
 
-    clear_treeview([treeview], [file_label])
+    clear_treeview([treeview], [file_label]) # lists so we can clear multple objects
 
     file = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
                                                                         ('All Files', '*.*')))
@@ -196,11 +212,13 @@ def select_datafile_window(treeview: list, file_label):
     file_label['text'] = f'{leading_label} {file}'
 
     df_data = format_data(df_input)
+
     display_csv(treeview, df_data)
 
     # ** fix/convert to function later
     # if is_col_choice:
     try:
+        # update_col_option_menu()
         print('test')
         # https://stackoverflow.com/questions/17580218/changing-the-options-of-a-optionmenu-when-clicking-a-button
         # Answer from: user2555451
@@ -213,11 +231,9 @@ def select_datafile_window(treeview: list, file_label):
 
         var_col_choice.set(new_cols[-1])
         print('Updated Option Menu')
-
-
+        print(var_col_choice.get())
     except:
         pass
-        # update_col_option_menu()
 
 
     return None
@@ -388,31 +404,10 @@ def plot_test(frame):
     canvas = FigureCanvasTkAgg(figure=fig, master=root)  # A tk.DrawingArea.
     canvas.draw()
 
-    # pack_toolbar=False will make it easier to use a layout manager later on.
     toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False)
     toolbar.update()
 
-    # button_quit = tk.Button(master=frame, text="Quit", command=root.destroy)
-
-
-    # slider_update = tk.Scale(frame, from_=1, to=5, orient=tk.HORIZONTAL,
-    #                             command=False, label="Frequency [Hz]")
-
-    # Packing order is important. Widgets are processed sequentially and if there
-    # is no space left, because the window is too small, they are not displayed.
-    # The canvas is rather flexible in its size, so we pack it last which makes
-    # sure the UI controls are displayed as long as possible.
-    # button_quit.pack(side=tk.BOTTOM)
-    # slider_update.pack(side=tk.BOTTOM)
-    
-    # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
-    # toolbar.grid(row=4, column=2, sticky='nsew', padx=2, pady=2)
-
-    # canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-    # canvas.get_tk_widget().grid(row=0, rowspan=3, column=0, columnspan=4, sticky='nsew', padx=2, pady=2)
     canvas.get_tk_widget().grid(row=0, rowspan=1, column=1)
-
-    # canvas.get_tk_widget().grid(row=0, column=0, sticky='nsew', padx=2, pady=2)
 
     return None
 
@@ -507,6 +502,20 @@ def coastdown_page():
     return None
     
 
+# def output_session_analysis(df, treeview):
+#     # helpfer function to get dataframe from session_analysis and display to GUI
+#     df = df.to_frame()
+#     df['Stats'] = ['count', 'mean', 'std', 'min', '5%', '10%', '25%', '50%', '75%', '90%', '95%', 'max']
+
+#     first_column = df.pop('Stats')
+#     df.insert(0, 'Stats', first_column)
+
+#     # print(df)
+#     display_csv(treeview, df)
+
+#     return df
+
+
 def basic_stats_page():
     global optionmenu_var_col
 
@@ -540,6 +549,7 @@ def basic_stats_page():
     
     # Widgets
 
+    # Page title
     page_title = Label(header_frame, text='UConn FSAE DAQ Multitool')
     page_title.place(relx=.5, rely=.5, anchor=CENTER)
     page_title.config(font=('arial', 14))
@@ -569,7 +579,8 @@ def basic_stats_page():
     button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
-    button3 = Button(button_frame, text='Process Data', command=lambda: False)
+    # button3 = Button(button_frame, text='Process Data', command=lambda: session_analysis(df_data, var_col_choice))
+    button3 = Button(button_frame, text='Process Data', command=lambda: output_session_analysis(basic_stats(df_data, var_col_choice.get()), tree2_data))
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
     ## Options
@@ -585,6 +596,20 @@ def basic_stats_page():
                             variable=rmv_stationary_bool, onvalue=1, offvalue=0, justify=LEFT)
     checkbox_rmv_stationary.place(y=142, relx=.5, anchor=CENTER)
     
+
+    # temp
+    b1 = tk.Button(root, text='confirm', command=print(var_col_choice.get()))
+    b1.pack()
+    
+    # b2 = tk.Button(root, text="confirm", command=print())
+    # b2.pack()
+    
+    # b3 = tk.Button(root, text="confirm", command=confirm)
+    # b3.pack()
+
+    # temp
+
+
     ## Statistics
     filepath_label1 = Label(info_frame, text='File 1: ', wraplength=450, justify=LEFT)
     filepath_label1.place(y=10, x=10)
@@ -644,7 +669,7 @@ def sector_analysis_page():
     page_title.place(relx=.5, rely=.5, anchor=CENTER)
     page_title.config(font=('arial', 14))
     
-    ## Treeview 1 widget
+    ## Treeview 1 widget ## ** create function
     tree1_data = ttk.Treeview(treeview1_frame)
     tree1_data.place(relheight=1, relwidth=1)
     treescrolly = Scrollbar(tree1_data, orient='vertical', command=tree1_data.yview)
@@ -662,6 +687,15 @@ def sector_analysis_page():
     treescrollx.pack(side='bottom', fill='x')
     treescrolly.pack(side='right', fill='y')    
     
+    ## Treeview 3 widget
+    tree3_data = ttk.Treeview(treeview3_frame)
+    tree3_data.place(relheight=1, relwidth=1)
+    treescrolly = Scrollbar(tree3_data, orient='vertical', command=tree3_data.yview)
+    treescrollx = Scrollbar(tree3_data, orient='horizontal', command=tree3_data.xview)
+    tree3_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
+    treescrollx.pack(side='bottom', fill='x')
+    treescrolly.pack(side='right', fill='y')    
+    
     ## Main Buttons
     button1 = Button(button_frame, text='Data File', command=lambda: select_datafile_window(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
@@ -669,10 +703,10 @@ def sector_analysis_page():
     button2 = Button(button_frame, text='Sectors File', command=lambda: file_select_window(tree2_data, filepath_label2))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
-    button3 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1, filepath_label2]))
+    button3 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data, tree3_data], [filepath_label1, filepath_label2]))
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
-    button4 = Button(button_frame, text='Process Data', command=lambda: False)
+    button4 = Button(button_frame, text='Process Data', command=lambda: output_sector_analysis(sector_analysis_v2(df_data, df_data2, var_col_choice.get()), tree3_data))
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
 
     ## Options
@@ -705,11 +739,38 @@ def sector_analysis_page():
     
     stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
     stat4_label.place(y=135, x=10)
-    
 
     main_btn()
 
     return None
+
+
+def output_session_analysis(df, treeview):
+    # helpfer function to get dataframe from session_analysis and display to GUI
+    df = df.to_frame()
+    # ** create constant for the list below
+    df['Stats'] = c.STATS_LABELS
+
+    first_column = df.pop('Stats')
+    df.insert(0, 'Stats', first_column)
+
+    display_csv(treeview, df)
+
+    return df
+
+
+def output_sector_analysis(df, treeview):
+    # helpfer function to get dataframe from session_analysis and display to GUI
+    df = df.to_frame()
+    # ** create constant for the list below\
+    df['Stats'] = c.STATS_LABELS
+
+    first_column = df.pop('Stats')
+    df.insert(0, 'Stats', first_column)
+
+    display_csv(treeview, df)
+
+    return df
 
 
 def main():
@@ -717,6 +778,7 @@ def main():
     # limp_mode_page()
 
     return None
+
 
 main()
 root.mainloop()

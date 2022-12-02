@@ -1,5 +1,5 @@
 import constants as c
-from gui import var_col_choice, normalize_stationary_bool, rmv_stationary_bool 
+# from gui import var_col_choice, normalize_stationary_bool, rmv_stationary_bool 
 
 import pandas as pd
 import numpy as np
@@ -171,7 +171,7 @@ def stationary_normalization(df, var_col, true_false):
 
 def basic_stats(df, var_col):
     df_basic_stats = df[var_col].describe(percentiles=c.PERCENTILE_LIST)
-    
+
     return df_basic_stats
 
 
@@ -518,63 +518,82 @@ def limp_mode(df_list: list):
 
 
 def sector_analysis():
-        # Sector analysis by time interval
-        # ** Future: Time or Distance interval 
-        # (Distance could be easier since corners will always be the same distance from 
-        # the start becon assuming there are no off tracks)
-        df_corner_times = load_sectors_csv()
-        df_corners = sector_dataframe_v2(df_data, df_corner_times)
-        
-        # normalization_input = prompt_input_options(normalization_options_list)
-        # if normalization_input == normalization_options_list[0]:
-        df_data = stationary_normalization(df_data, variable_col, rmv_stationary_tf)
-        
-        # df_corner_stats = corner_stats_v2(df_corners, variable_col)
-        # print('Corner Stats')
-        # print(df_corner_stats)
+    # Sector analysis by time interval
+    # ** Future: Time or Distance interval 
+    # (Distance could be easier since corners will always be the same distance from 
+    # the start becon assuming there are no off tracks)
+    df_corner_times = load_sectors_csv()
+    df_corners = sector_dataframe_v2(df_data, df_corner_times)
+    
+    # normalization_input = prompt_input_options(normalization_options_list)
+    if normalize_stationary_bool:
+        df_data = stationary_normalization(df_data, var_col_choice, rmv_stationary_bool)
+    
+    df_corner_stats = sector_stats_v2(df_corners, col)
+    # print('Corner Stats')
+    # print(df_corner_stats)
+    
+    return df_corner_stats
+
+
+def sector_analysis_v2(df_data, df_sectors, col, normalize_stationary_bool, rmv_stationary_bool):
+    # Sector analysis by time interval
+    # ** Future: Time or Distance interval 
+    # (Distance could be easier since corners will always be the same distance from 
+    # the start becon assuming there are no off tracks)
+    df_new_data = sector_dataframe_v2(df_data, df_sectors)
+    
+    if normalize_stationary_bool:
+        df_new_data = stationary_normalization(df_new_data, col, normalize_stationary_bool)
+    
+    df_corner_stats = sector_stats_v2(df_new_data, col)
+    # print('Corner Stats')
+    # print(df_corner_stats)
+    
+    return df_corner_stats
 
 
 def downforce_analysis(df):
-        # Coast down analysis
-        # print(script_options_list[1])
+    # Coast down analysis
+    # print(script_options_list[1])
 
-        # normalization_input = prompt_input_options(normalization_options_list)
-        # if normalization_input == normalization_options_list[0]:
-        df_data = stationary_normalization(df, c.FL_FORCE_COL, rmv_stationary_tf)
-        df_data = stationary_normalization(df, c.FR_FORCE_COL, rmv_stationary_tf)
-        df_data = stationary_normalization(df, c.RL_FORCE_COL, rmv_stationary_tf)
-        df_data = stationary_normalization(df, c.RR_FORCE_COL, rmv_stationary_tf)
-        
-        df_downforce = coast_down(df_data)
+    # normalization_input = prompt_input_options(normalization_options_list)
+    # if normalization_input == normalization_options_list[0]:
+    df_data = stationary_normalization(df, c.FL_FORCE_COL, True)
+    df_data = stationary_normalization(df, c.FR_FORCE_COL, True)
+    df_data = stationary_normalization(df, c.RL_FORCE_COL, True)
+    df_data = stationary_normalization(df, c.RR_FORCE_COL, True)
+    
+    df_downforce = coast_down(df_data)
 
-        # plots_list = []
-        # for col in FORCE_COLS:
-        plot = var1_vs_var2_graph(df_downforce, c.SPEED_COL, c.DOWNFORCE_COL, plot_type='scatter', marker='o', single_plot_t_f=True)
-            # plots_list.append(plot)
-        
-        coastdown_output_pdf = matplotlib.backends.backend_pdf.PdfPages(coastdown_pdf_path)
-        coastdown_output_pdf.savefig(plot)
-        coastdown_output_pdf.close()
+    # plots_list = []
+    # for col in FORCE_COLS:
+    plot = var1_vs_var2_graph(df_downforce, c.SPEED_COL, c.DOWNFORCE_COL, plot_type='scatter', marker='o', single_plot_t_f=True)
+        # plots_list.append(plot)
+    
+    coastdown_output_pdf = matplotlib.backends.backend_pdf.PdfPages(coastdown_pdf_path)
+    coastdown_output_pdf.savefig(plot)
+    coastdown_output_pdf.close()
 
-        export_df_csv(df_downforce, coastdown_output_csv, False)
+    export_df_csv(df_downforce, coastdown_output_csv, False)
 
 
-def session_analysis(df):
-        # Basic stats analysis
-        # print(script_options_list[2])
+# def session_analysis(df, col):
+#     # Basic stats analysis
+#     # print(script_options_list[2])
 
-        # normalization_input = prompt_input_options(normalization_options_list)
-        # if normalization_input == normalization_options_list[0]:
-            # df_data = stationary_normalization(df_data, variable_col, rmv_stationary_tf)
-        
-        df_stats = basic_stats(df, variable_col)
-        # print()
-        # print(f'Data for: {variable_col}')
-        # print(df_data)
-        # print()
-        print('\nStatistics')
-        print(df_stats)
-        print()
-
+#     # normalization_input = prompt_input_options(normalization_options_list)
+#     # if normalization_input == normalization_options_list[0]:
+#         # df_data = stationary_normalization(df_data, variable_col, rmv_stationary_tf)
+    
+#     df_stats = basic_stats(df, col)
+#     # print()
+#     # print(f'Data for: {variable_col}')
+#     # print(df_data)
+#     # print()
+#     print('\nStatistics')
+#     print(df_stats)
+#     print()
+#     return df_stats
 
 

@@ -2,6 +2,7 @@
 MIN_STATIONARY_ENTRIES = 50 # Minimum number of occurances (at a distance) to be considered stationary
 ROWS_TO_SKIP = 13 # Used to separate # deprecated
 PERCENTILE_LIST = [.05, .10, .25, .50, .75, .90, .95]
+STATS_LABELS = ['count', 'mean', 'std', 'min', '5%', '10%', '25%', '50%', '75%', '90%', '95%', 'max']
 
 CAR_WEIGHT = 490
 
