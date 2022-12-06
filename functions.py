@@ -579,10 +579,11 @@ def limp_mode_v2(df_list: list):
     # buttons to select which is which. Using glob will no longer be needed. We can simply assign
     # csv_files to [file1.csv (100%), file2.csv (x%)]
 
+    # session_names_list = ['100%', 'x%']
     df_sessions_list = []
     for df in df_list:
-        df = format_data(df)
         df = round_limp_mode(df)
+        
         df_laps_list = split_laps(df)[1:-2] # **
         
         for index, lap in enumerate(df_laps_list):
@@ -596,18 +597,18 @@ def limp_mode_v2(df_list: list):
             avg_temps_list.append(temperature)
 
         hottest_lap_avg = max(avg_temps_list)
-
-        # print(f'# of Laps: {len(df_laps_list)}')
+        print()
+        print(f'# of Laps: {len(df_laps_list)}')
         usable_laps_list = []
         for lap in df_laps_list:
             min_temp_diff = abs(hottest_lap_avg - lap[c.COOLANT_TEMP_COL].min())
             max_temp_diff = abs(hottest_lap_avg - lap[c.COOLANT_TEMP_COL].max())
             
-            # print(f'Min: {lap[c.COOLANT_TEMP_COL].min()}')
-            # print(f'Min diff: {min_temp_diff}')
+            print(f'Min: {lap[c.COOLANT_TEMP_COL].min()}')
+            print(f'Min diff: {min_temp_diff}')
             
-            # print(f'Max: {lap[c.COOLANT_TEMP_COL].max()}')
-            # print(f'Max diff: {max_temp_diff}')
+            print(f'Max: {lap[c.COOLANT_TEMP_COL].max()}')
+            print(f'Max diff: {max_temp_diff}')
 
             if (min_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG) and (max_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG):
                 usable_laps_list.append(lap)
@@ -616,29 +617,29 @@ def limp_mode_v2(df_list: list):
         df_good_laps = pd.concat(usable_laps_list)
         df_sessions_list.append(df_good_laps)
 
-    c = -1
+    k = -1
     for df_session in df_sessions_list:
-        c+=1
-        session_name = os.path.basename(csv_files[c])
-        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=session_name, color=c.colors_list[c])
+        k+=1
+        # session_name = os.path.basename(csv_files[k])
+        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 0: {k}', color=c.colors_list[k])
     plt.figure()
     
     
-    c = -1
+    k = -1
     for df_session in df_sessions_list:
-        c+=1
-        session_name = os.path.basename(csv_files[c])
-        limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=session_name, color=c.colors_list[c])
+        k+=1
+        # session_name = os.path.basename(csv_files[k])
+        limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 1: {k}', color=c.colors_list[k])
         # plt.xticks(np.arange(min(df_session[c.RPM_COL]), max(df_session[c.RPM_COL]), 500))
         plt.xticks(np.arange(custom_round(min(df_session[c.RPM_COL]), 1000), custom_round(max(df_session[c.RPM_COL]), 1000), 500))
     plt.figure()
     
     
     sessions_groupby_rpm_list = []
-    c = -1
+    k = -1
     for df_session in df_sessions_list:
-        c+=1
-        session_name = os.path.basename(csv_files[c])
+        k+=1
+        # session_name = os.path.basename(csv_files[k])
 
         df_rpm_groupby = df_session.groupby(c.RPM_COL, group_keys=False)[c.OIL_PRESS_COL].mean().reset_index(name=c.OIL_PRESS_COL)
         sessions_groupby_rpm_list.append(df_rpm_groupby)
@@ -650,8 +651,10 @@ def limp_mode_v2(df_list: list):
     print(df_pct_change)
 
     plt.figure()
-    var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[0]), color=c.colors_list[0])
-    var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[1]), color=c.colors_list[1])
+    # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[0]), color=c.colors_list[0])
+    # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[1]), color=c.colors_list[1])
+    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 2: {k}', color=c.colors_list[0])
+    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 3: {k}', color=c.colors_list[1])
 
 
     plt.show()
@@ -710,9 +713,9 @@ def downforce_analysis(df):
     downforce_plot = var1_vs_var2_graph(df_downforce, c.SPEED_COL, c.DOWNFORCE_COL, plot_type='scatter', marker='o', single_plot_t_f=True)
         # plots_list.append(plot)
     
-    coastdown_output_pdf = matplotlib.backends.backend_pdf.PdfPages(coastdown_pdf_path)
-    coastdown_output_pdf.savefig(downforce_plot)
-    coastdown_output_pdf.close()
+    # coastdown_output_pdf = matplotlib.backends.backend_pdf.PdfPages(coastdown_pdf_path)
+    # coastdown_output_pdf.savefig(downforce_plot)
+    # coastdown_output_pdf.close()
 
     # export_df_csv(df_downforce, coastdown_output_csv, False)
 
