@@ -7,9 +7,17 @@
 # Create helper functions to create and store the dataframe variables
 
 # To do:
-# - Create function to create treeviews (decluter)
+# - Create function to create treeviews (decluter) DONE
 # - Create helper functions for other analysis functions
-# - Look into classes and reformatting GUI structure
+# - Create widget to toggle limp mode parameters
+# - Restructure plotting functions
+# - For functions.py, create separate files for unique functions (downforce, oil...)
+# - Look into classes and reformatting GUI structure (backlog)
+
+## Note
+# Look into storing text in a txt file and references that text
+# ie an about page could contain a paragraph and not be needed in the code itself
+## Note end
 
 ####################################################################
 # UConn Formula SAE
@@ -20,13 +28,7 @@
 # louis.cundari@uconn.edu | louiscundari3@outlook.com
 ####################################################################
 
-## Note
-# Look into storing text in a txt file and references that text
-# ie an about page could contain a paragraph and not be needed in the code itself
-## Note end
-
 from functions import *
-
 
 import tkinter as tk
 from tkinter import * # remove * and add used functions later
@@ -59,13 +61,12 @@ root.geometry('{}x{}+{}+{}'.format(window_width, window_height, x_coordinate, y_
 root.pack_propagate(False)
 
 
-col_options_list = ['Col 1', 'Col 2', 'Col 3'] # this will be the columns from input csv
+col_options_list = ['Columns'] # this will be the columns from input csv
 var_col_choice = StringVar()
 var_col_choice.set(col_options_list[0])
 
-normalize_stationary_bool = IntVar(value=0)
-rmv_stationary_bool = IntVar(value=0)
-
+normalize_stationary_bool = BooleanVar(value=False)
+rmv_stationary_bool = BooleanVar(value=False)
 
 
 def clear_page():
@@ -114,7 +115,7 @@ def main_menu_page():
     button2 = Button(frame_main, text='Sector Analysis', command=lambda: sector_analysis_page())
     button2.place(rely=0.35, relx=0.60, x=5, width=80, anchor=CENTER)
 
-    button3 = Button(frame_main, text='Coastdown Analysis', command=lambda: coastdown_page())
+    button3 = Button(frame_main, text='Coastdown Analysis', command=lambda: coast_down_page())
     button3.place(rely=0.50, relx=0.50, width=165, anchor=CENTER)
 
     button4 = Button(frame_main, text='Limp Mode Analysis', command=lambda: limp_mode_page())
@@ -174,8 +175,10 @@ def clear_treeview(trees: list, lables: list):
     return None
 
 
-def file_select_window(treeview: list, file_label):
+def select_file(treeview: list, file_label):
     # Used for generic files without necessary formatting (sectors.csv)
+    global df_file
+
     clear_treeview([treeview], [file_label])
 
     file = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
@@ -183,18 +186,39 @@ def file_select_window(treeview: list, file_label):
     if file == '' or file is None:
         return None
 
-    df_input = pd.read_csv(file, encoding='ISO-8859-1').reset_index(drop=True)
+    df_file = pd.read_csv(file, encoding='ISO-8859-1').reset_index(drop=True)
 
-    display_csv(treeview, df_input)
+    display_csv(treeview, df_file)
 
     return None
 
 
-
-def select_datafile_window(treeview: list, file_label):
+def select_file_v2(treeview: list, file_label):
     # used to select datafiles from racestudio
     ## ** is there another way to use the df_data instead of makeing it global?
-    global df_data
+    global df_reference_file
+
+    clear_treeview([treeview], [file_label]) # lists so we can clear multple objects
+
+    file = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
+                                                                        ('All Files', '*.*')))
+    if file == '' or file is None:
+        return None
+
+    df_reference_file = pd.read_csv(file, encoding='ISO-8859-1').reset_index(drop=True)
+
+    leading_label = file_label['text'].split(':')[0] + ':'
+    file_label['text'] = f'{leading_label} {file}'
+
+    display_csv(treeview, df_reference_file)
+
+    return None
+
+
+def select_datafile1(treeview: list, file_label):
+    # used to select datafiles from racestudio
+    ## ** is there another way to use the df_data instead of makeing it global?
+    global df_data1
 
     clear_treeview([treeview], [file_label]) # lists so we can clear multple objects
 
@@ -211,27 +235,72 @@ def select_datafile_window(treeview: list, file_label):
     leading_label = file_label['text'].split(':')[0] + ':'
     file_label['text'] = f'{leading_label} {file}'
 
-    df_data = format_data(df_input)
+    df_data1 = format_data(df_input)
 
-    display_csv(treeview, df_data)
+    display_csv(treeview, df_data1)
 
     # ** fix/convert to function later
     # if is_col_choice:
     try:
         # update_col_option_menu()
-        print('test')
         # https://stackoverflow.com/questions/17580218/changing-the-options-of-a-optionmenu-when-clicking-a-button
         # Answer from: user2555451
         optionmenu_var_col['menu'].delete(0, 'end')
 
         # Insert list of new options (tk._setit hooks them up to var)
-        new_cols = df_data.columns
+        new_cols = df_data1.columns
         for col in new_cols:
             optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(var_col_choice, col))
 
         var_col_choice.set(new_cols[-1])
-        print('Updated Option Menu')
-        print(var_col_choice.get())
+        # print('Updated Option Menu')
+        # print(var_col_choice.get())
+    except:
+        pass
+
+    return None
+
+
+def select_datafile2(treeview: list, file_label):
+    # used to select datafiles from racestudio
+    ## ** is there another way to use the df_data instead of makeing it global?
+    global df_data2
+
+    clear_treeview([treeview], [file_label]) # lists so we can clear multple objects
+
+    file = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
+                                                                        ('All Files', '*.*')))
+    if file == '' or file is None:
+        return None
+    # else:
+    #     pass
+        # file_data.delete(*file_data.get_children()) # unpack all rows
+
+    df_input = pd.read_fwf(file, header=None, encoding='ISO-8859-1').reset_index(drop=True)
+
+    leading_label = file_label['text'].split(':')[0] + ':'
+    file_label['text'] = f'{leading_label} {file}'
+
+    df_data2 = format_data(df_input)
+
+    display_csv(treeview, df_data2)
+
+    # ** fix/convert to function later
+    # if is_col_choice:
+    try:
+        # update_col_option_menu()
+        # https://stackoverflow.com/questions/17580218/changing-the-options-of-a-optionmenu-when-clicking-a-button
+        # Answer from: user2555451
+        optionmenu_var_col['menu'].delete(0, 'end')
+
+        # Insert list of new options (tk._setit hooks them up to var)
+        new_cols = df_data2.columns
+        for col in new_cols:
+            optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(var_col_choice, col))
+
+        var_col_choice.set(new_cols[-1])
+        # print('Updated Option Menu')
+        # print(var_col_choice.get())
     except:
         pass
 
@@ -298,16 +367,17 @@ def limp_mode_page():
     treescrolly.pack(side='right', fill='y')    
     
     ## Main Buttons
-    button1 = Button(button_frame, text='Oil File 1', command=lambda: select_datafile_window(tree1_data, filepath_label1))
+    button1 = Button(button_frame, text='Oil File 1', command=lambda: select_datafile1(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
-    button2 = Button(button_frame, text='Oil File 2', command=lambda: select_datafile_window(tree2_data, filepath_label2))
+    button2 = Button(button_frame, text='Oil File 2', command=lambda: select_datafile1(tree2_data, filepath_label2))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
     button3 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1, filepath_label2]))
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
-    button4 = Button(button_frame, text='Process Data', command=lambda:plot_test3([plot1_frame, plot2_frame, plot3_frame]))
+    # button4 = Button(button_frame, text='Process Data', command=lambda: plot_test3([plot1_frame, plot2_frame, plot3_frame]))
+    button4 = Button(button_frame, text='Process Data', command=lambda: limp_mode_v2([plot1_frame, plot2_frame, plot3_frame]))
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
     
     ## Statistics
@@ -345,14 +415,13 @@ def limp_mode_page():
 
 
 def create_window(window_name):
-    subwindow = tk.Toplevel(root)
-    subwindow.wm_title(window_name)
+    graph_window = tk.Toplevel(root)
+    graph_window.wm_title(window_name)
     
-    plot_test2(subwindow)
+    # plot_test2(graph_window)
+    # graph_window.mainloop() # Not needed for sub windows.
 
-    subwindow.mainloop() # works without this line...?
-
-    return None
+    return graph_window
 
     
 def create_plot_test():
@@ -382,13 +451,27 @@ def plot_test3(windows_list: list):
 
     return None
 
+    
+def popup_graph(plot, subwindow):
+    canvas = FigureCanvasTkAgg(plot, master=subwindow)  # A tk.DrawingArea.
+    canvas.draw()
+    # pack_toolbar=False will make it easier to use a layout manager later on.
+    toolbar = NavigationToolbar2Tk(canvas, subwindow, pack_toolbar=True)
+    toolbar.update()
+
+    canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
+    toolbar.pack(side=BOTTOM, fill=X)
+
+    return None
+
 
 def plot_test2(window):
     fig = create_plot_test()
-    # pack_toolbar=False will make it easier to use a layout manager later on.
-    
+
     canvas = FigureCanvasTkAgg(fig, master=window)  # A tk.DrawingArea.
     canvas.draw()
+    
+    # pack_toolbar=False will make it easier to use a layout manager later on.
     toolbar = NavigationToolbar2Tk(canvas, window, pack_toolbar=False)
     toolbar.update()
 
@@ -412,7 +495,19 @@ def plot_test(frame):
     return None
 
 
-def coastdown_page():
+def create_treeview(frame):
+    tree_data = ttk.Treeview(frame)
+    tree_data.place(relheight=1, relwidth=1)
+    treescrolly = Scrollbar(tree_data, orient='vertical', command=tree_data.yview)
+    treescrollx = Scrollbar(tree_data, orient='horizontal', command=tree_data.xview)
+    tree_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
+    treescrollx.pack(side='bottom', fill='x')
+    treescrolly.pack(side='right', fill='y')  
+
+    return tree_data
+
+
+def coast_down_page():
     clear_page()
     # main_btn() 
     # ** either make main_btn() work with the grid; make this so its always 
@@ -441,7 +536,7 @@ def coastdown_page():
     ## Page layout
     header_frame = LabelFrame(root, bd=1, relief='flat')
     treeview1_frame = LabelFrame(root, text='Coastdown Data', font=14, bd=2, relief='ridge')
-    plot1_frame = LabelFrame(root, text='Downforce Plot', font=14, bd=2, relief='ridge')
+    plot1_frame = LabelFrame(root, text='Downforce vs Speed', font=14, bd=2, relief='ridge')
     button_frame = LabelFrame(root, text='Options', font=14, bd=2, relief='ridge')
     info_frame = LabelFrame(root, text='Info', font=14, bd=2, relief='ridge')
 
@@ -468,13 +563,13 @@ def coastdown_page():
     treescrolly.pack(side='right', fill='y')    
     
     ## Main Buttons
-    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile_window(tree1_data, filepath_label1))
+    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
     button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
-    button3 = Button(button_frame, text='Process Data', command=lambda:plot_test3([plot1_frame]))
+    button3 = Button(button_frame, text='Process Data', command=lambda: False)
     button3.place(y=70, relx=.75, width=80, anchor=CENTER)
     
     ## Statistics
@@ -494,26 +589,16 @@ def coastdown_page():
     stat4_label.place(y=135, x=10)
     
     # Graph Buttons
-    graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
+    # graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
+    graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: popup_graph(
+        downforce_analysis(df_data1),
+        create_window(graph_button1['text'])))
+
     graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
 
     main_btn()
 
     return None
-    
-
-# def output_session_analysis(df, treeview):
-#     # helpfer function to get dataframe from session_analysis and display to GUI
-#     df = df.to_frame()
-#     df['Stats'] = ['count', 'mean', 'std', 'min', '5%', '10%', '25%', '50%', '75%', '90%', '95%', 'max']
-
-#     first_column = df.pop('Stats')
-#     df.insert(0, 'Stats', first_column)
-
-#     # print(df)
-#     display_csv(treeview, df)
-
-#     return df
 
 
 def basic_stats_page():
@@ -555,32 +640,20 @@ def basic_stats_page():
     page_title.config(font=('arial', 14))
     
     ## Treeview 1 widget
-    tree1_data = ttk.Treeview(treeview1_frame)
-    tree1_data.place(relheight=1, relwidth=1)
-    treescrolly = Scrollbar(tree1_data, orient='vertical', command=tree1_data.yview)
-    treescrollx = Scrollbar(tree1_data, orient='horizontal', command=tree1_data.xview)
-    tree1_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
-    treescrollx.pack(side='bottom', fill='x')
-    treescrolly.pack(side='right', fill='y')    
-    
+    tree1_data = create_treeview(treeview1_frame)
+
     ## Treeview 2 widget
-    tree2_data = ttk.Treeview(treeview2_frame)
-    tree2_data.place(relheight=1, relwidth=1)
-    treescrolly = Scrollbar(tree2_data, orient='vertical', command=tree2_data.yview)
-    treescrollx = Scrollbar(tree2_data, orient='horizontal', command=tree2_data.xview)
-    tree2_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
-    treescrollx.pack(side='bottom', fill='x')
-    treescrolly.pack(side='right', fill='y')    
+    tree2_data = create_treeview(treeview2_frame)
     
     ## Main Buttons
-    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile_window(tree1_data, filepath_label1))
+    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
     button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
     # button3 = Button(button_frame, text='Process Data', command=lambda: session_analysis(df_data, var_col_choice))
-    button3 = Button(button_frame, text='Process Data', command=lambda: output_session_analysis(basic_stats(df_data, var_col_choice.get()), tree2_data))
+    button3 = Button(button_frame, text='Process Data', command=lambda: output_session_analysis(basic_stats(df_data1, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()), tree2_data))
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
     ## Options
@@ -595,20 +668,6 @@ def basic_stats_page():
     checkbox_rmv_stationary = Checkbutton(button_frame, text='Remove stationary values (description)    ', 
                             variable=rmv_stationary_bool, onvalue=1, offvalue=0, justify=LEFT)
     checkbox_rmv_stationary.place(y=142, relx=.5, anchor=CENTER)
-    
-
-    # temp
-    b1 = tk.Button(root, text='confirm', command=print(var_col_choice.get()))
-    b1.pack()
-    
-    # b2 = tk.Button(root, text="confirm", command=print())
-    # b2.pack()
-    
-    # b3 = tk.Button(root, text="confirm", command=confirm)
-    # b3.pack()
-
-    # temp
-
 
     ## Statistics
     filepath_label1 = Label(info_frame, text='File 1: ', wraplength=450, justify=LEFT)
@@ -661,8 +720,8 @@ def sector_analysis_page():
     treeview1_frame.grid(row=1, rowspan=2, column=0, sticky='nsew', padx=2, pady=2)
     treeview2_frame.grid(row=1, rowspan=2, column=1, sticky='nsew', padx=2, pady=2)
     treeview3_frame.grid(row=1, rowspan=2, column=2, sticky='nsew', padx=2, pady=2)
-    button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
-    info_frame.grid(row=3, column=1, columnspan=2, sticky='nsew', padx=2, pady=2)
+    button_frame.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=2, pady=2)
+    info_frame.grid(row=3, column=2, columnspan=2, sticky='nsew', padx=2, pady=2)
     
     # Widgets
     page_title = Label(header_frame, text='UConn FSAE DAQ Multitool')
@@ -670,45 +729,30 @@ def sector_analysis_page():
     page_title.config(font=('arial', 14))
     
     ## Treeview 1 widget ## ** create function
-    tree1_data = ttk.Treeview(treeview1_frame)
-    tree1_data.place(relheight=1, relwidth=1)
-    treescrolly = Scrollbar(tree1_data, orient='vertical', command=tree1_data.yview)
-    treescrollx = Scrollbar(tree1_data, orient='horizontal', command=tree1_data.xview)
-    tree1_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
-    treescrollx.pack(side='bottom', fill='x')
-    treescrolly.pack(side='right', fill='y')    
+    tree1_data = create_treeview(treeview1_frame)
     
     ## Treeview 2 widget
-    tree2_data = ttk.Treeview(treeview2_frame)
-    tree2_data.place(relheight=1, relwidth=1)
-    treescrolly = Scrollbar(tree2_data, orient='vertical', command=tree2_data.yview)
-    treescrollx = Scrollbar(tree2_data, orient='horizontal', command=tree2_data.xview)
-    tree2_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
-    treescrollx.pack(side='bottom', fill='x')
-    treescrolly.pack(side='right', fill='y')    
+    tree2_data = create_treeview(treeview2_frame)
     
     ## Treeview 3 widget
-    tree3_data = ttk.Treeview(treeview3_frame)
-    tree3_data.place(relheight=1, relwidth=1)
-    treescrolly = Scrollbar(tree3_data, orient='vertical', command=tree3_data.yview)
-    treescrollx = Scrollbar(tree3_data, orient='horizontal', command=tree3_data.xview)
-    tree3_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
-    treescrollx.pack(side='bottom', fill='x')
-    treescrolly.pack(side='right', fill='y')    
+    tree3_data = create_treeview(treeview3_frame)
     
     ## Main Buttons
-    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile_window(tree1_data, filepath_label1))
+    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
-    button2 = Button(button_frame, text='Sectors File', command=lambda: file_select_window(tree2_data, filepath_label2))
+    button2 = Button(button_frame, text='Sectors File', command=lambda: select_file_v2(tree2_data, filepath_label2))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
     button3 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data, tree3_data], [filepath_label1, filepath_label2]))
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
-
-    button4 = Button(button_frame, text='Process Data', command=lambda: output_sector_analysis(sector_analysis_v2(df_data, df_data2, var_col_choice.get()), tree3_data))
+    # **
+    button4 = Button(button_frame, text='Process Data', command=lambda: output_sector_analysis(
+        sector_analysis(df_data1, df_reference_file, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()),
+        tree3_data)
+        )
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
-
+    
     ## Options
     optionmenu_var_col = OptionMenu(button_frame, var_col_choice, *col_options_list, command=lambda x: print(f'OptionMenu: {x}'))
     optionmenu_var_col.place(y=110, relx=.25, anchor=CENTER)
@@ -747,13 +791,6 @@ def sector_analysis_page():
 
 def output_session_analysis(df, treeview):
     # helpfer function to get dataframe from session_analysis and display to GUI
-    df = df.to_frame()
-    # ** create constant for the list below
-    df['Stats'] = c.STATS_LABELS
-
-    first_column = df.pop('Stats')
-    df.insert(0, 'Stats', first_column)
-
     display_csv(treeview, df)
 
     return df
@@ -761,9 +798,9 @@ def output_session_analysis(df, treeview):
 
 def output_sector_analysis(df, treeview):
     # helpfer function to get dataframe from session_analysis and display to GUI
-    df = df.to_frame()
+    # df = df.to_frame()
     # ** create constant for the list below\
-    df['Stats'] = c.STATS_LABELS
+    df['Stats'] = c.SECTOR_STATS_LABELS
 
     first_column = df.pop('Stats')
     df.insert(0, 'Stats', first_column)
@@ -773,9 +810,24 @@ def output_sector_analysis(df, treeview):
     return df
 
 
+def output_downforce_graph(plot, treeview):
+    # helpfer function to get dataframe from session_analysis and display to GUI
+    # df = df.to_frame()
+    # ** create constant for the list below\
+
+
+    return None
+
+
+# def output_reference_data(df, treeview):
+#     # helpfer function to get dataframe from session_analysis and display to GUI
+#     display_csv(treeview, df)
+
+#     return df
+
+
 def main():
     main_menu_page()
-    # limp_mode_page()
 
     return None
 
