@@ -114,6 +114,8 @@ def format_data(df):
     df = df.iloc[data_start_index:].reset_index(drop=True)
     df = df.astype(float)
 
+    df = df.dropna(axis=1, how='all')
+
     return df
 
 
@@ -603,7 +605,7 @@ def limp_mode(df_list: list):
     return None
 
 
-def limp_mode_v2(df_list: list):
+def limp_mode_v2(df_list: list, max_oil_temp_diff: int):
     # ** When creating a GUI, we will only need 2 files, 100% oil and x% oil. There will be two
     # buttons to select which is which. Using glob will no longer be needed. We can simply assign
     # csv_files to [file1.csv (100%), file2.csv (x%)]
@@ -644,7 +646,8 @@ def limp_mode_v2(df_list: list):
             print(f'Max: {lap[c.COOLANT_TEMP_COL].max()}')
             print(f'Max diff: {max_temp_diff}')
 
-            if (min_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG) and (max_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG):
+            # if (min_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG) and (max_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG):
+            if (min_temp_diff < max_oil_temp_diff) and (max_temp_diff < max_oil_temp_diff):
                 usable_laps_list.append(lap)
 
 
