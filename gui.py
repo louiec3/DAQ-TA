@@ -8,7 +8,7 @@
 
 # To do:
 # - Create function to create treeviews (decluter) DONE
-# - Create helper functions for other analysis functions
+# - Figure out how to make the Graph buttons work individually for oil analysis
 # - Create widget to toggle limp mode parameters
 # - Restructure plotting functions
 # - For functions.py, create separate files for unique functions (downforce, oil...)
@@ -74,6 +74,25 @@ def clear_page():
         widget.destroy()
 
 
+def main_btn():
+    # temp
+    # root.grid_rowconfigure(0, weight=1)
+    # root.grid_rowconfigure(1, weight=3)
+    # root.grid_rowconfigure(2, weight=3)
+    # root.grid_rowconfigure(3, weight=3)
+
+    # root.grid_columnconfigure(0, weight=2)
+    # root.grid_columnconfigure(1, weight=2)
+    # root.grid_columnconfigure(2, weight=1)
+    # temp
+
+
+    button_main = Button(root, text=' Main Menu ', command=lambda: main_menu_page())
+    button_main.place(x=0, y=0)
+
+    return None
+
+
 def main_menu_page():
     clear_page()
     main_btn()
@@ -124,25 +143,6 @@ def main_menu_page():
 ## Main Menu Page End
 
 
-def main_btn():
-    # temp
-    # root.grid_rowconfigure(0, weight=1)
-    # root.grid_rowconfigure(1, weight=3)
-    # root.grid_rowconfigure(2, weight=3)
-    # root.grid_rowconfigure(3, weight=3)
-
-    # root.grid_columnconfigure(0, weight=2)
-    # root.grid_columnconfigure(1, weight=2)
-    # root.grid_columnconfigure(2, weight=1)
-    # temp
-
-
-    button_main = Button(root, text=' Main Menu ', command=lambda: main_menu_page())
-    button_main.place(x=0, y=0)
-
-    return None
-
-
 def display_csv(treeview, df):
     print(type(df))
     print(list(df.columns))
@@ -169,8 +169,11 @@ def clear_treeview(trees: list, lables: list):
         treeview.delete(*treeview.get_children())
         treeview['columns'] = [None]
     
-    for label in lables:
-        label['text'] = label['text'].split(':')[0] + ':'
+    if lables is None:
+        return None
+    else:
+        for label in lables:
+            label['text'] = label['text'].split(':')[0] + ':'
 
     return None
 
@@ -308,112 +311,6 @@ def select_datafile2(treeview: list, file_label):
     return None
 
 
-def limp_mode_page():
-    clear_page()
-    # main_btn() 
-    # ** either make main_btn() work with the grid; make this so its always 
-    # ontop; or place at bottom of function (it will be placed last, thus on top)
-
-    ## Grid configuration
-    root.grid_rowconfigure(0, weight=1)
-    root.grid_rowconfigure(1, weight=3)
-    root.grid_rowconfigure(2, weight=3)
-    root.grid_rowconfigure(3, weight=3)
-
-    root.grid_columnconfigure(0, weight=2)
-    root.grid_columnconfigure(1, weight=2)
-    root.grid_columnconfigure(2, weight=1)
-
-    ## Page layout
-    header_frame = LabelFrame(root, bd=1, relief='flat')
-    treeview1_frame = LabelFrame(root, text='100% Oil', font=14, bd=2, relief='ridge')
-    treeview2_frame = LabelFrame(root, text='x% Oil', font=14, bd=2, relief='ridge')
-    plot1_frame = LabelFrame(root, text='Coolant Temp vs Time', font=14, bd=2, relief='ridge')
-    plot2_frame = LabelFrame(root, text='Coolant Temp vs RPM', font=14, bd=2, relief='ridge')
-    plot3_frame = LabelFrame(root, text='RPM % Change', font=14, bd=2, relief='ridge')
-    button_frame = LabelFrame(root, text='Options', font=14, bd=2, relief='ridge')
-    info_frame = LabelFrame(root, text='Info', font=14, bd=2, relief='ridge')
-
-    header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=2, pady=2)
-    treeview1_frame.grid(row=1, rowspan=2, column=0, sticky='nsew', padx=2, pady=2)
-    treeview2_frame.grid(row=1, rowspan=2, column=1, sticky='nsew', padx=2, pady=2)
-    plot1_frame.grid(row=1, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
-    plot2_frame.grid(row=2, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
-    plot3_frame.grid(row=3, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
-    button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
-    info_frame.grid(row=3, column=1, columnspan=1, sticky='nsew', padx=2, pady=2)
-    
-    # Widgets
-    page_title = Label(header_frame, text='UConn FSAE DAQ Multitool')
-    page_title.place(relx=.5, rely=.5, anchor=CENTER)
-    page_title.config(font=('arial', 14))
-    
-    ## Treeview 1 widget
-    tree1_data = ttk.Treeview(treeview1_frame)
-    tree1_data.place(relheight=1, relwidth=1)
-    treescrolly = Scrollbar(tree1_data, orient='vertical', command=tree1_data.yview)
-    treescrollx = Scrollbar(tree1_data, orient='horizontal', command=tree1_data.xview)
-    tree1_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
-    treescrollx.pack(side='bottom', fill='x')
-    treescrolly.pack(side='right', fill='y')    
-    
-    ## Treeview 2 widget
-    tree2_data = ttk.Treeview(treeview2_frame)
-    tree2_data.place(relheight=1, relwidth=1)
-    treescrolly = Scrollbar(tree2_data, orient='vertical', command=tree2_data.yview)
-    treescrollx = Scrollbar(tree2_data, orient='horizontal', command=tree2_data.xview)
-    tree2_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
-    treescrollx.pack(side='bottom', fill='x')
-    treescrolly.pack(side='right', fill='y')    
-    
-    ## Main Buttons
-    button1 = Button(button_frame, text='Oil File 1', command=lambda: select_datafile1(tree1_data, filepath_label1))
-    button1.place(y=30, relx=.25, width=80, anchor=CENTER)
-
-    button2 = Button(button_frame, text='Oil File 2', command=lambda: select_datafile1(tree2_data, filepath_label2))
-    button2.place(y=70, relx=.25, width=80, anchor=CENTER)
-
-    button3 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1, filepath_label2]))
-    button3.place(y=30, relx=.75, width=80, anchor=CENTER)
-
-    # button4 = Button(button_frame, text='Process Data', command=lambda: plot_test3([plot1_frame, plot2_frame, plot3_frame]))
-    button4 = Button(button_frame, text='Process Data', command=lambda: limp_mode_v2([plot1_frame, plot2_frame, plot3_frame]))
-    button4.place(y=70, relx=.75, width=80, anchor=CENTER)
-    
-    ## Statistics
-    filepath_label1 = Label(info_frame, text='File 1: ', wraplength=450, justify=LEFT)
-    filepath_label1.place(y=10, x=10)
-
-    filepath_label2 = Label(info_frame, text='File 2: ', wraplength=450, justify=LEFT)
-    filepath_label2.place(y=55, x=10)
-
-    stat1_label = Label(info_frame, text=' ', wraplength=350, justify=LEFT)
-    stat1_label.place(y=75, x=10)
-
-    stat2_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat2_label.place(y=95, x=10)
-
-    stat3_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat3_label.place(y=115, x=10)
-    
-    stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat4_label.place(y=135, x=10)
-    
-    # Graph Buttons
-    graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
-    graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
-
-    graph_button2 = Button(plot2_frame, text='Graph 2', command=lambda: create_window(graph_button2['text']))
-    graph_button2.place(rely=.5, relx=.5, width=80, anchor=CENTER)
-
-    graph_button3 = Button(plot3_frame, text='Graph 3', command=lambda: create_window(graph_button3['text']))
-    graph_button3.place(rely=.5, relx=.5, width=80, anchor=CENTER)
-    
-    main_btn()
-
-    return None
-
-
 def create_window(window_name):
     graph_window = tk.Toplevel(root)
     graph_window.wm_title(window_name)
@@ -505,100 +402,6 @@ def create_treeview(frame):
     treescrolly.pack(side='right', fill='y')  
 
     return tree_data
-
-
-def coast_down_page():
-    clear_page()
-    # main_btn() 
-    # ** either make main_btn() work with the grid; make this so its always 
-    # ontop; or place at bottom of function (it will be placed last, thus on top)
-
-    ## Grid configuration # ... how to reset grid... this doesnt change the previous configuration 
-    # root.grid_rowconfigure(0, weight=1)
-    # root.grid_rowconfigure(1, weight=3)
-    # root.grid_rowconfigure(2, weight=3)
-
-    # root.grid_columnconfigure(0, weight=2)
-    # root.grid_columnconfigure(1, weight=2)
-
-    # temp
-    root.grid_rowconfigure(0, weight=1)
-    root.grid_rowconfigure(1, weight=3)
-    root.grid_rowconfigure(2, weight=3)
-    root.grid_rowconfigure(3, weight=3)
-
-    root.grid_columnconfigure(0, weight=2)
-    root.grid_columnconfigure(1, weight=2)
-    root.grid_columnconfigure(2, weight=1)
-    # temp
-
-
-    ## Page layout
-    header_frame = LabelFrame(root, bd=1, relief='flat')
-    treeview1_frame = LabelFrame(root, text='Coastdown Data', font=14, bd=2, relief='ridge')
-    plot1_frame = LabelFrame(root, text='Downforce vs Speed', font=14, bd=2, relief='ridge')
-    button_frame = LabelFrame(root, text='Options', font=14, bd=2, relief='ridge')
-    info_frame = LabelFrame(root, text='Info', font=14, bd=2, relief='ridge')
-
-    header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=2, pady=2)
-    treeview1_frame.grid(row=1, rowspan=2, column=0, columnspan=2, sticky='nsew', padx=2, pady=2)
-    plot1_frame.grid(row=1, rowspan=2, column=2, sticky='nsew', padx=2, pady=2)
-    button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
-    info_frame.grid(row=3, column=1, columnspan=2, sticky='nsew', padx=2, pady=2)
-    ## Grid End
-    
-    # Widgets
-
-    page_title = Label(header_frame, text='UConn FSAE DAQ Multitool')
-    page_title.place(relx=.5, rely=.5, anchor=CENTER)
-    page_title.config(font=('arial', 14))
-    
-    ## Treeview 1 widget
-    tree1_data = ttk.Treeview(treeview1_frame)
-    tree1_data.place(relheight=1, relwidth=1)
-    treescrolly = Scrollbar(tree1_data, orient='vertical', command=tree1_data.yview)
-    treescrollx = Scrollbar(tree1_data, orient='horizontal', command=tree1_data.xview)
-    tree1_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
-    treescrollx.pack(side='bottom', fill='x')
-    treescrolly.pack(side='right', fill='y')    
-    
-    ## Main Buttons
-    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
-    button1.place(y=30, relx=.25, width=80, anchor=CENTER)
-
-    button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
-    button2.place(y=70, relx=.25, width=80, anchor=CENTER)
-
-    button3 = Button(button_frame, text='Process Data', command=lambda: False)
-    button3.place(y=70, relx=.75, width=80, anchor=CENTER)
-    
-    ## Statistics
-    filepath_label1 = Label(info_frame, text='File 1: ', wraplength=450, justify=LEFT)
-    filepath_label1.place(y=10, x=10)
-
-    stat1_label = Label(info_frame, text=' ', wraplength=350, justify=LEFT)
-    stat1_label.place(y=75, x=10)
-
-    stat2_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat2_label.place(y=95, x=10)
-
-    stat3_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat3_label.place(y=115, x=10)
-    
-    stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat4_label.place(y=135, x=10)
-    
-    # Graph Buttons
-    # graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
-    graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: popup_graph(
-        downforce_analysis(df_data1),
-        create_window(graph_button1['text'])))
-
-    graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
-
-    main_btn()
-
-    return None
 
 
 def basic_stats_page():
@@ -789,6 +592,206 @@ def sector_analysis_page():
     return None
 
 
+def coast_down_page():
+    clear_page()
+    # main_btn() 
+    # ** either make main_btn() work with the grid; make this so its always 
+    # ontop; or place at bottom of function (it will be placed last, thus on top)
+
+    ## Grid configuration # ... how to reset grid... this doesnt change the previous configuration 
+    # root.grid_rowconfigure(0, weight=1)
+    # root.grid_rowconfigure(1, weight=3)
+    # root.grid_rowconfigure(2, weight=3)
+
+    # root.grid_columnconfigure(0, weight=2)
+    # root.grid_columnconfigure(1, weight=2)
+
+    # temp
+    root.grid_rowconfigure(0, weight=1)
+    root.grid_rowconfigure(1, weight=3)
+    root.grid_rowconfigure(2, weight=3)
+    root.grid_rowconfigure(3, weight=3)
+
+    root.grid_columnconfigure(0, weight=2)
+    root.grid_columnconfigure(1, weight=2)
+    root.grid_columnconfigure(2, weight=1)
+    # temp
+
+
+    ## Page layout
+    header_frame = LabelFrame(root, bd=1, relief='flat')
+    treeview1_frame = LabelFrame(root, text='Coastdown Data', font=14, bd=2, relief='ridge')
+    plot1_frame = LabelFrame(root, text='Downforce vs Speed', font=14, bd=2, relief='ridge')
+    button_frame = LabelFrame(root, text='Options', font=14, bd=2, relief='ridge')
+    info_frame = LabelFrame(root, text='Info', font=14, bd=2, relief='ridge')
+
+    header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=2, pady=2)
+    treeview1_frame.grid(row=1, rowspan=2, column=0, columnspan=2, sticky='nsew', padx=2, pady=2)
+    plot1_frame.grid(row=1, rowspan=2, column=2, sticky='nsew', padx=2, pady=2)
+    button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
+    info_frame.grid(row=3, column=1, columnspan=2, sticky='nsew', padx=2, pady=2)
+    ## Grid End
+    
+    # Widgets
+
+    page_title = Label(header_frame, text='UConn FSAE DAQ Multitool')
+    page_title.place(relx=.5, rely=.5, anchor=CENTER)
+    page_title.config(font=('arial', 14))
+    
+    ## Treeview 1 widget
+    tree1_data = ttk.Treeview(treeview1_frame)
+    tree1_data.place(relheight=1, relwidth=1)
+    treescrolly = Scrollbar(tree1_data, orient='vertical', command=tree1_data.yview)
+    treescrollx = Scrollbar(tree1_data, orient='horizontal', command=tree1_data.xview)
+    tree1_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
+    treescrollx.pack(side='bottom', fill='x')
+    treescrolly.pack(side='right', fill='y')    
+    
+    ## Main Buttons
+    button1 = Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
+    button1.place(y=30, relx=.25, width=80, anchor=CENTER)
+
+    button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
+    button2.place(y=70, relx=.25, width=80, anchor=CENTER)
+
+    button3 = Button(button_frame, text='Process Data', command=lambda: False)
+    button3.place(y=70, relx=.75, width=80, anchor=CENTER)
+    
+    ## Statistics
+    filepath_label1 = Label(info_frame, text='File 1: ', wraplength=450, justify=LEFT)
+    filepath_label1.place(y=10, x=10)
+
+    stat1_label = Label(info_frame, text=' ', wraplength=350, justify=LEFT)
+    stat1_label.place(y=75, x=10)
+
+    stat2_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat2_label.place(y=95, x=10)
+
+    stat3_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat3_label.place(y=115, x=10)
+    
+    stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat4_label.place(y=135, x=10)
+    
+    # Graph Buttons
+    # graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
+    graph_button1 = Button(plot1_frame, text='Plot Downforce', command=lambda: popup_graph(
+        downforce_analysis(df_data1),
+        create_window(graph_button1['text'])))
+
+    graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
+
+    main_btn()
+
+    return None
+
+
+def limp_mode_page():
+    clear_page()
+    # main_btn() 
+    # ** either make main_btn() work with the grid; make this so its always 
+    # ontop; or place at bottom of function (it will be placed last, thus on top)
+
+    ## Grid configuration
+    root.grid_rowconfigure(0, weight=1)
+    root.grid_rowconfigure(1, weight=3)
+    root.grid_rowconfigure(2, weight=3)
+    root.grid_rowconfigure(3, weight=3)
+
+    root.grid_columnconfigure(0, weight=2)
+    root.grid_columnconfigure(1, weight=2)
+    root.grid_columnconfigure(2, weight=1)
+
+    ## Page layout
+    header_frame = LabelFrame(root, bd=1, relief='flat')
+    treeview1_frame = LabelFrame(root, text='100% Oil', font=14, bd=2, relief='ridge')
+    treeview2_frame = LabelFrame(root, text='x% Oil', font=14, bd=2, relief='ridge')
+    plot1_frame = LabelFrame(root, text='Coolant Temp vs Time', font=14, bd=2, relief='ridge')
+    plot2_frame = LabelFrame(root, text='Coolant Temp vs RPM', font=14, bd=2, relief='ridge')
+    plot3_frame = LabelFrame(root, text='RPM % Change', font=14, bd=2, relief='ridge')
+    button_frame = LabelFrame(root, text='Options', font=14, bd=2, relief='ridge')
+    info_frame = LabelFrame(root, text='Info', font=14, bd=2, relief='ridge')
+
+    header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=2, pady=2)
+    treeview1_frame.grid(row=1, rowspan=2, column=0, sticky='nsew', padx=2, pady=2)
+    treeview2_frame.grid(row=1, rowspan=2, column=1, sticky='nsew', padx=2, pady=2)
+    plot1_frame.grid(row=1, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
+    plot2_frame.grid(row=2, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
+    plot3_frame.grid(row=3, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
+    button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
+    info_frame.grid(row=3, column=1, columnspan=1, sticky='nsew', padx=2, pady=2)
+    
+    # Widgets
+    page_title = Label(header_frame, text='UConn FSAE DAQ Multitool')
+    page_title.place(relx=.5, rely=.5, anchor=CENTER)
+    page_title.config(font=('arial', 14))
+    
+    ## Treeview 1 widget
+    tree1_data = ttk.Treeview(treeview1_frame)
+    tree1_data.place(relheight=1, relwidth=1)
+    treescrolly = Scrollbar(tree1_data, orient='vertical', command=tree1_data.yview)
+    treescrollx = Scrollbar(tree1_data, orient='horizontal', command=tree1_data.xview)
+    tree1_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
+    treescrollx.pack(side='bottom', fill='x')
+    treescrolly.pack(side='right', fill='y')    
+    
+    ## Treeview 2 widget
+    tree2_data = ttk.Treeview(treeview2_frame)
+    tree2_data.place(relheight=1, relwidth=1)
+    treescrolly = Scrollbar(tree2_data, orient='vertical', command=tree2_data.yview)
+    treescrollx = Scrollbar(tree2_data, orient='horizontal', command=tree2_data.xview)
+    tree2_data.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
+    treescrollx.pack(side='bottom', fill='x')
+    treescrolly.pack(side='right', fill='y')    
+    
+    ## Main Buttons
+    button1 = Button(button_frame, text='Oil File 1', command=lambda: select_datafile1(tree1_data, filepath_label1))
+    button1.place(y=30, relx=.25, width=80, anchor=CENTER)
+
+    button2 = Button(button_frame, text='Oil File 2', command=lambda: select_datafile2(tree2_data, filepath_label2))
+    button2.place(y=70, relx=.25, width=80, anchor=CENTER)
+
+    button3 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1, filepath_label2]))
+    button3.place(y=30, relx=.75, width=80, anchor=CENTER)
+
+    # button4 = Button(button_frame, text='Process Data', command=lambda: plot_test3([plot1_frame, plot2_frame, plot3_frame]))
+    button4 = Button(button_frame, text='Process Data', command=lambda: limp_mode_v2([df_data1, df_data2]))
+    button4.place(y=70, relx=.75, width=80, anchor=CENTER)
+    
+    ## Statistics
+    filepath_label1 = Label(info_frame, text='File 1: ', wraplength=450, justify=LEFT)
+    filepath_label1.place(y=10, x=10)
+
+    filepath_label2 = Label(info_frame, text='File 2: ', wraplength=450, justify=LEFT)
+    filepath_label2.place(y=55, x=10)
+
+    stat1_label = Label(info_frame, text=' ', wraplength=350, justify=LEFT)
+    stat1_label.place(y=75, x=10)
+
+    stat2_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat2_label.place(y=95, x=10)
+
+    stat3_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat3_label.place(y=115, x=10)
+    
+    stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat4_label.place(y=135, x=10)
+    
+    # Graph Buttons
+    graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
+    graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
+
+    graph_button2 = Button(plot2_frame, text='Graph 2', command=lambda: create_window(graph_button2['text']))
+    graph_button2.place(rely=.5, relx=.5, width=80, anchor=CENTER)
+
+    graph_button3 = Button(plot3_frame, text='Graph 3', command=lambda: create_window(graph_button3['text']))
+    graph_button3.place(rely=.5, relx=.5, width=80, anchor=CENTER)
+    
+    main_btn()
+
+    return None
+
+
 def output_session_analysis(df, treeview):
     # helpfer function to get dataframe from session_analysis and display to GUI
     display_csv(treeview, df)
@@ -798,8 +801,8 @@ def output_session_analysis(df, treeview):
 
 def output_sector_analysis(df, treeview):
     # helpfer function to get dataframe from session_analysis and display to GUI
-    # df = df.to_frame()
-    # ** create constant for the list below\
+    clear_treeview([treeview], None)
+    
     df['Stats'] = c.SECTOR_STATS_LABELS
 
     first_column = df.pop('Stats')
@@ -817,13 +820,6 @@ def output_downforce_graph(plot, treeview):
 
 
     return None
-
-
-# def output_reference_data(df, treeview):
-#     # helpfer function to get dataframe from session_analysis and display to GUI
-#     display_csv(treeview, df)
-
-#     return df
 
 
 def main():

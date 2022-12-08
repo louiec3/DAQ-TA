@@ -1,5 +1,8 @@
+# To Do:
+# - Find a way to name sessions in limpmode graph
+
+
 import constants as c
-# from gui import var_col_choice, normalize_stationary_bool, rmv_stationary_bool 
 
 import pandas as pd
 import numpy as np
@@ -280,28 +283,46 @@ def limp_mode_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f, lap_nu
 
 def sector_dataframe(df1, df2):
     ## convert time to seconds (start and end time vars are given as mm:ss.ms, csv reads only ss.ms)
-    start_list, end_list = sector_times(df2)
-    df_list = []
-    for start, end in zip(start_list, end_list):
-        start_time = round(start, 1)
-        end_time = round(end, 1)
-        df_sector_temp = df1[(df1[c.TIME_COL] >= start_time) & (df1[c.TIME_COL] <= end_time)]
-        df_list.append(df_sector_temp)
     
+    sectors_cellA2 = str(df2.iloc[0]['Sector Start']) # ** covert to constant
+    print(f'A2: {sectors_cellA2}')
+
+    if ':' in sectors_cellA2:
+        print('Time Sectors')
+        start_list, end_list = sector_times(df2)
+        df_list = []
+        for start_time, end_time in zip(start_list, end_list):
+            # start_time = round(start, 1)
+            # end_time = round(end, 1)
+            df_sector_temp = df1[(df1[c.TIME_COL] >= start_time) & (df1[c.TIME_COL] <= end_time)]
+            df_list.append(df_sector_temp)
+    else:
+        print('Distance Sectors')
+        start_list, end_list = sector_distances(df2)
+        df_list = []
+        for start_distance, end_distance in zip(start_list, end_list):
+            df_sector_temp = df1[(df1[c.DISTANCE_COL] >= start_distance) & (df1[c.DISTANCE_COL] <= end_distance)]
+            df_list.append(df_sector_temp)
+        
     df_all_sectors = pd.concat(df_list)
     
     return df_all_sectors
 
 
 def sector_stats(df, var_col):
-    df_basic_stats = df[var_col].describe(percentiles=c.PERCENTILE_LIST)
-    
+    basic_stats_list = df[var_col].describe(percentiles=c.PERCENTILE_LIST)
+    basic_stats_list = basic_stats_list.to_list()
+
     sigma = df[var_col].std()
     sigma2 = sigma*2
     sigma3 = sigma*3
     sigmas_list = [sigma2, sigma3]
+    print(f'{sigmas_list} {type(sigmas_list)}')
+    print(f'{basic_stats_list} {type(basic_stats_list)}')
     
-    df_basic_stats = df_basic_stats.append(sigmas_list) 
+    basic_stats_list.extend(sigmas_list)
+    print(basic_stats_list)
+    df_basic_stats = pd.DataFrame({'Values': basic_stats_list})
 
     # df_outliers_sigma2 = df[(df[var_col] <= mean+sigma2) & (df[var_col] >= mean+sigma2)]
     # df_outliers_sigma3 = df[(df[var_col] >= sigma3) & (abs(df[var_col]) <= mean)]
@@ -371,6 +392,14 @@ def sector_times(df):
     
     start_list = df_start.tolist()
     end_list = df_end.tolist()
+    
+    return start_list, end_list
+
+
+def sector_distances(df):
+    columns_list = df.columns    
+    start_list = df[columns_list[0]].tolist()
+    end_list = df[columns_list[1]].tolist()
     
     return start_list, end_list
 
@@ -479,7 +508,7 @@ def pct_change_graph(df, x_col, y_col, lap_num, color):
 
 
 ######### user functions start ##############
-# ** make new file
+# ** make new files
 def limp_mode(df_list: list):
     # ** When creating a GUI, we will only need 2 files, 100% oil and x% oil. There will be two
     # buttons to select which is which. Using glob will no longer be needed. We can simply assign
@@ -579,26 +608,31 @@ def limp_mode_v2(df_list: list):
     # buttons to select which is which. Using glob will no longer be needed. We can simply assign
     # csv_files to [file1.csv (100%), file2.csv (x%)]
 
-    # session_names_list = ['100%', 'x%']
+    # session_names_list = ['100%', 'x%']\
+
     df_sessions_list = []
     for df in df_list:
         df = round_limp_mode(df)
         
         df_laps_list = split_laps(df)[1:-2] # **
         
+        # loop laps to remove outliers
         for index, lap in enumerate(df_laps_list):
             lap = remove_rolling_outliers(lap, c.COOLANT_TEMP_COL, window=c.ROLLING_WINDOW)
             lap = remove_quantile_outliers(lap, c.LO_QUANTILE, c.HI_QUANTILE)
             df_laps_list[index] = lap
 
+        # loop laps to collect hottest average temperature
         avg_temps_list = []
         for lap in df_laps_list:
             temperature = hottest_avg_temp(lap, c.COOLANT_TEMP_COL)
             avg_temps_list.append(temperature)
 
         hottest_lap_avg = max(avg_temps_list)
+        
         print()
         print(f'# of Laps: {len(df_laps_list)}')
+
         usable_laps_list = []
         for lap in df_laps_list:
             min_temp_diff = abs(hottest_lap_avg - lap[c.COOLANT_TEMP_COL].min())
@@ -684,12 +718,12 @@ def sector_analysis(df_data, df_sectors, col, normalize_stationary_bool, rmv_sta
         print('Removing Stationary Only')
         df_sector_data = remove_stationary(df_sector_data)
         df_corner_stats = sector_stats(df_sector_data, col)
-        print(df_corner_stats)
 
         return df_corner_stats
     
     else:
         print('Raw Data')
+        print(df_sector_data)
         df_corner_stats = sector_stats(df_sector_data, col)
 
         return df_corner_stats

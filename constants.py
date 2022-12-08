@@ -2,9 +2,10 @@
 MIN_STATIONARY_ENTRIES = 50 # Minimum number of occurances (at a distance) to be considered stationary
 ROWS_TO_SKIP = 13 # Used to separate # deprecated
 PERCENTILE_LIST = [.05, .10, .25, .50, .75, .90, .95]
-STATS_LABELS = ['Count', 'Mean', 'Standard Deviation', 'Min', '5%', '10%', '25%', '50%', '75%', '90%', '95%', 'Max']
+STATS_LABELS = ['Count', 'Mean', 'Sigma', 'Min', '5%', '10%', '25%', '50%', '75%', '90%', '95%', 'Max']
+SECTOR_STATS_LABELS = ['Count', 'Mean', 'Sigma', 'Min', '5%', '10%', '25%', '50%', '75%', '90%', '95%', 'Max', 'Sigma 2', 'Sigma 3']
 
-CAR_WEIGHT = 490
+CAR_WEIGHT = 0
 
 THROTTLE_CONSTANT = 10
 FBRAKE_CONSTANT = 30
@@ -36,9 +37,7 @@ RL_FORCE_COL = 'Rear_Left_Force (#)'
 RR_FORCE_COL = 'Rear_Right_Force (#)'
 FORCE_COLS = [FL_FORCE_COL, FR_FORCE_COL, RL_FORCE_COL, RR_FORCE_COL]
 
-
-
-# Outlier Removal Constants
+# Limp Mode Outlier Removal Constants
 ROLLING_SIGMA = 2
 ROLLING_WINDOW = 75
 
