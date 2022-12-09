@@ -8,8 +8,9 @@
 
 # To do:
 # - Create function to create treeviews (decluter) DONE
-# - Create widget to toggle limp mode parameters
+# - Create widget to toggle limp mode parameters DONE
 # - Figure out how to make the Graph buttons work individually for oil analysis
+# - Implement % change graph
 # - Restructure plotting functions... way too cluttered with too many arguments
 # - For functions.py, create separate files for unique functions (downforce, oil...)
 # - Look into classes and reformatting GUI structure (backlog)
@@ -33,8 +34,8 @@ from functions import *
 import tkinter as tk
 from tkinter import * # remove * and add used functions later
 from tkinter import ttk, filedialog, messagebox, simpledialog
-from os.path import dirname, abspath 
-import os
+# from os.path import dirname, abspath 
+# import os
 import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -60,7 +61,7 @@ root.geometry('{}x{}+{}+{}'.format(window_width, window_height, x_coordinate, y_
 # root.geometry('500x500') # use this if above doesnt work
 root.pack_propagate(False)
 
-
+# GUI variables
 col_options_list = ['Columns'] # this will be the columns from input csv
 var_col_choice = StringVar()
 var_col_choice.set(col_options_list[0])
@@ -759,10 +760,10 @@ def limp_mode_page():
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
     # button4 = Button(button_frame, text='Process Data', command=lambda: plot_test3([plot1_frame, plot2_frame, plot3_frame]))
-    button4 = Button(button_frame, text='Process Data', command=lambda: limp_mode_v2([df_data1, df_data2], int(max_oil_temp_diff_from_avg.get()))) # ** displays all graphs at once.
+    button4 = Button(button_frame, text='Process Data', command=lambda: limp_mode_v2([df_data1, df_data2], int(spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
 
-    spinbox1 = Spinbox(button_frame, from_=0, to=99, textvariable=max_oil_temp_diff_from_avg)
+    spinbox1 = Spinbox(button_frame, from_=0, to=99, textvariable=spinbox_max_temp_diff_from_avg)
     spinbox1.place(y=140, relx=.25, width=80, anchor=CENTER)
     spinbox1_label = Label(button_frame, text='Max temperature difference from\naverage (used to remove outliers)')
     spinbox1_label.place(relx=.25, y=110, anchor=CENTER)

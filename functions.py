@@ -511,100 +511,6 @@ def pct_change_graph(df, x_col, y_col, lap_num, color):
 
 ######### user functions start ##############
 # ** make new files
-def limp_mode(df_list: list):
-    # ** When creating a GUI, we will only need 2 files, 100% oil and x% oil. There will be two
-    # buttons to select which is which. Using glob will no longer be needed. We can simply assign
-    # csv_files to [file1.csv (100%), file2.csv (x%)]
-
-    # csv_files = glob.glob(os.path.join(input_path + 'oil_files', 'oil*.csv'))
-    # print(csv_files)
-
-    # oil_100 = [file for file in csv_files if '100' in file][0]
-    # csv_files.remove(oil_100)
-    # csv_files.insert(0, oil_100)
-
-    df_sessions_list = []
-    for f in csv_files:
-        df_temp = pd.read_fwf(f, header=None, encoding='ISO-8859-1')
-
-        df_temp = format_data(df_temp)
-        df_temp = round_limp_mode(df_temp)
-        df_laps_list = split_laps(df_temp)[1:-2] # **
-        
-        for index, lap in enumerate(df_laps_list):
-            lap = remove_rolling_outliers(lap, c.COOLANT_TEMP_COL, window=c.ROLLING_WINDOW)
-            lap = remove_quantile_outliers(lap, c.LO_QUANTILE, c.HI_QUANTILE)
-            df_laps_list[index] = lap
-
-        avg_temps_list = []
-        for lap in df_laps_list:
-            temperature = hottest_avg_temp(lap, c.COOLANT_TEMP_COL)
-            avg_temps_list.append(temperature)
-
-        hottest_lap_avg = max(avg_temps_list)
-
-        # print(f'# of Laps: {len(df_laps_list)}')
-        usable_laps_list = []
-        for lap in df_laps_list:
-            min_temp_diff = abs(hottest_lap_avg - lap[c.COOLANT_TEMP_COL].min())
-            max_temp_diff = abs(hottest_lap_avg - lap[c.COOLANT_TEMP_COL].max())
-            
-            # print(f'Min: {lap[c.COOLANT_TEMP_COL].min()}')
-            # print(f'Min diff: {min_temp_diff}')
-            
-            # print(f'Max: {lap[c.COOLANT_TEMP_COL].max()}')
-            # print(f'Max diff: {max_temp_diff}')
-
-            if (min_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG) and (max_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG):
-                usable_laps_list.append(lap)
-
-
-        df_good_laps = pd.concat(usable_laps_list)
-        df_sessions_list.append(df_good_laps)
-
-    c = -1
-    for df_session in df_sessions_list:
-        c+=1
-        session_name = os.path.basename(csv_files[c])
-        var1_vs_var2_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=session_name, color=c.colors_list[c])
-    plt.figure()
-    
-    
-    c = -1
-    for df_session in df_sessions_list:
-        c+=1
-        session_name = os.path.basename(csv_files[c])
-        var1_vs_var2_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=session_name, color=c.colors_list[c])
-        # plt.xticks(np.arange(min(df_session[c.RPM_COL]), max(df_session[c.RPM_COL]), 500))
-        plt.xticks(np.arange(custom_round(min(df_session[c.RPM_COL]), 1000), custom_round(max(df_session[c.RPM_COL]), 1000), 500))
-    plt.figure()
-    
-    
-    sessions_groupby_rpm_list = []
-    c = -1
-    for df_session in df_sessions_list:
-        c+=1
-        session_name = os.path.basename(csv_files[c])
-
-        df_rpm_groupby = df_session.groupby(c.RPM_COL, group_keys=False)[c.OIL_PRESS_COL].mean().reset_index(name=c.OIL_PRESS_COL)
-        sessions_groupby_rpm_list.append(df_rpm_groupby)
-    
-    df_pct_change = pd.merge(sessions_groupby_rpm_list[0], sessions_groupby_rpm_list[1], on=c.RPM_COL)
-    df_pct_change['% Change Initial'] = ((df_pct_change[f'{c.OIL_PRESS_COL}_x'] - df_pct_change[f'{c.OIL_PRESS_COL}_x']) / df_pct_change[f'{c.OIL_PRESS_COL}_x']) * 100
-    df_pct_change['% Change'] = ((df_pct_change[f'{c.OIL_PRESS_COL}_y'] - df_pct_change[f'{c.OIL_PRESS_COL}_x']) / df_pct_change[f'{c.OIL_PRESS_COL}_x']) * 100
-
-    print(df_pct_change)
-
-    plt.figure()
-    var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[0]), color=c.colors_list[0])
-    var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[1]), color=c.colors_list[1])
-
-
-    plt.show()
-
-    return None
-
-
 def limp_mode_v2(df_list: list, max_oil_temp_diff: int):
     # ** When creating a GUI, we will only need 2 files, 100% oil and x% oil. There will be two
     # buttons to select which is which. Using glob will no longer be needed. We can simply assign
@@ -699,7 +605,6 @@ def limp_mode_v2(df_list: list, max_oil_temp_diff: int):
     return None
 
 
-
 def sector_analysis(df_data, df_sectors, col, normalize_stationary_bool, rmv_stationary_bool):
     # Sector analysis by time interval
     # ** Future: Add Time or Distance interval 
@@ -757,24 +662,4 @@ def downforce_analysis(df):
     # export_df_csv(df_downforce, coastdown_output_csv, False)
 
     return downforce_plot
-
-
-# def session_analysis(df, col):
-#     # Basic stats analysis
-#     # print(script_options_list[2])
-
-#     # normalization_input = prompt_input_options(normalization_options_list)
-#     # if normalization_input == normalization_options_list[0]:
-#         # df_data = stationary_normalization(df_data, variable_col, rmv_stationary_tf)
-    
-#     df_stats = basic_stats(df, col)
-#     # print()
-#     # print(f'Data for: {variable_col}')
-#     # print(df_data)
-#     # print()
-#     print('\nStatistics')
-#     print(df_stats)
-#     print()
-#     return df_stats
-
 
