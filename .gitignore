@@ -6,5 +6,7 @@ Unneeded
 pyvenv.cfg
 test.py
 test2.py
-__pycache__/constants.cpython-310.pyc
-__pycache__/functions.cpython-310.pyc
+__pycache__
+Output
+Demo Files
+Test_Input
