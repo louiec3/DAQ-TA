@@ -39,6 +39,8 @@ coastdown_output_csv = output_path + 'CoastDown_' + timestamp + '.csv'
 coastdown_pdf_path = output_path + 'CoastDown_' + timestamp + '.pdf'
 # coastdown_output_pdf = matplotlib.backends.backend_pdf.PdfPages(coastdown_pdf_path)
 
+matplotlib.rcParams['figure.figsize'] = (9.5, 5)
+
 def prompt_input_options(option_list):
     # Use when a user must select an option
     valid_list = [x+1 for x in range(len(option_list))]
@@ -165,6 +167,7 @@ def remove_stationary(df):
     print('=======')
     return df_remove_stationary
 
+
 def stationary_normalization(df, var_col, rmv_stationary_bool):
     # For entries of no movement, find the average acceleration. 
     # This will be used as our zero value.
@@ -180,14 +183,14 @@ def stationary_normalization(df, var_col, rmv_stationary_bool):
     if stationary_avg > 0:
         df[var_col] = df[var_col] - abs(stationary_avg)
     
-    # print(df_remove_stationary)
-    
     return df
 
 
 def basic_stats(df, var_col, normalize_stationary_bool, rmv_stationary_bool):
-    if normalize_stationary_bool is True:
-        df = stationary_normalization(df, var_col, rmv_stationary_bool)
+    if normalize_stationary_bool is True and rmv_stationary_bool is False:
+        df = stationary_normalization(df, var_col, False)
+    if normalize_stationary_bool is True and rmv_stationary_bool is True:
+        df = stationary_normalization(df, var_col, True)
     elif normalize_stationary_bool is False and rmv_stationary_bool is True:
         df = remove_stationary(df)
     
@@ -208,6 +211,7 @@ def var1_vs_var2_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f):
         fig = plt.figure()
     plt.style.use('ggplot')
     plot_styles_dict = {
+        'color': 'steelblue',
         'marker': marker
     }
     title = f'{y_col} vs {x_col}'
@@ -229,7 +233,16 @@ def var1_vs_var2_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f):
     elif plot_type.lower() == 'line':
         plt.plot(x, y, **plot_styles_dict, label=f'Lap')
     plt.autoscale(enable=True, axis='both', tight=None)
-    # plt.show()
+
+    # test
+    from scipy.optimize import curve_fit
+    def func1(x, a, b, c):
+        return a*x**2+b*x+c
+    params, _ = curve_fit(func1, x, y)
+    a, b, c = params[0], params[1], params[2]  
+    yfit1 = a*x**2+b*x+c      
+    plt.plot(x, yfit1, label=f'y={custom_round(a, .001)}*x^2+{custom_round(b, .001)}*x+{custom_round(c, .001)}')
+    # test
 
     # test Start
     plt.legend(loc='lower right')
@@ -268,7 +281,6 @@ def limp_mode_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f, lap_nu
     elif plot_type.lower() == 'line':
         plt.plot(x, y, **plot_styles_dict, label=f'Lap {lap_num}')
     plt.autoscale(enable=True, axis='both', tight=None)
-    # plt.show()
 
     # test Start
     plt.legend(loc='lower right')
@@ -278,9 +290,6 @@ def limp_mode_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f, lap_nu
         return fig
     except:
         return None
-
-    
-    return None
 
 
 def sector_dataframe(df1, df2):
@@ -418,15 +427,11 @@ def coast_down_data_validation(df):
     df_RL = df_valid_coast[[c.TIME_COL, c.RL_FORCE_COL, c.SPEED_COL]].rename(columns={c.RL_FORCE_COL: c.DOWNFORCE_COL})
     df_RR = df_valid_coast[[c.TIME_COL, c.RR_FORCE_COL, c.SPEED_COL]].rename(columns={c.RR_FORCE_COL: c.DOWNFORCE_COL})
     
-    df_downforce = pd.concat([df_FL, df_FR, df_RL, df_RR]).reset_index(drop=True)
-    
-    df_downforce[c.DOWNFORCE_COL] = df_downforce[c.DOWNFORCE_COL] / c.N_LBF_CONVERSION
-
     df_downforce = pd.concat([df_FL, df_FR, df_RL, df_RR]).reset_index(drop=True) # on=merge_cols).reset_index(drop=True)#.merge(df_RL, on=merge_cols).merge(df_RR, on=merge_cols).reset_index(drop=True)
     
     df_downforce[c.DOWNFORCE_COL] = df_downforce[c.DOWNFORCE_COL] / c.N_LBF_CONVERSION
     df_downforce[c.SPEED_COL] = df_downforce[c.SPEED_COL].apply(lambda x: custom_round(x, 1))
-
+    
     return df_downforce
 
 
@@ -564,18 +569,29 @@ def limp_mode_v2(df_list: list, max_oil_temp_diff: int):
     for df_session in df_sessions_list:
         k+=1
         # session_name = os.path.basename(csv_files[k])
-        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 0: {k}', color=c.colors_list[k])
-    plt.figure()
+        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 0: {k}', color=c.COLORS_LIST[k])
+    plt.figure('test1')
     
     
-    k = -1
+    # loop sessions to set max and min ticks for graph
+    max_rpm = []
+    min_rpm = []
+    for df_session in df_sessions_list:
+        min_rpm.append(min(df_session[c.RPM_COL]))
+        max_rpm.append(max(df_session[c.RPM_COL]))
+    min_rpm = min(min_rpm)
+    max_rpm = max(max_rpm)
+    
+
+    k = 0
     for df_session in df_sessions_list:
         k+=1
         # session_name = os.path.basename(csv_files[k])
-        limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 1: {k}', color=c.colors_list[k])
+        limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 1: {k}', color=c.COLORS_LIST[k])
         # plt.xticks(np.arange(min(df_session[c.RPM_COL]), max(df_session[c.RPM_COL]), 500))
-        plt.xticks(np.arange(custom_round(min(df_session[c.RPM_COL]), 1000), custom_round(max(df_session[c.RPM_COL]), 1000), 500))
-    plt.figure()
+        # plt.xticks(np.arange(custom_round(min(df_session[c.RPM_COL]), 1000), custom_round(max(df_session[c.RPM_COL]), 1000), 500))
+        plt.xticks(np.arange(custom_round(min_rpm, 1000), custom_round(max_rpm, 1000), 500))
+    plt.figure('test2')
     
     
     sessions_groupby_rpm_list = []
@@ -593,11 +609,10 @@ def limp_mode_v2(df_list: list, max_oil_temp_diff: int):
 
     print(df_pct_change)
 
-    plt.figure()
-    # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[0]), color=c.colors_list[0])
-    # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[1]), color=c.colors_list[1])
-    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 2: {k}', color=c.colors_list[0])
-    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 3: {k}', color=c.colors_list[1])
+    # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[0]), color=c.COLORS_LIST[0])
+    # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[1]), color=c.COLORS_LIST[1])
+    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 2: {k}', color=c.COLORS_LIST[0])
+    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 3: {k}', color=c.COLORS_LIST[1])
 
 
     plt.show()
@@ -638,11 +653,6 @@ def sector_analysis(df_data, df_sectors, col, normalize_stationary_bool, rmv_sta
 
 
 def downforce_analysis(df):
-    # Coast down analysis
-    # print(script_options_list[1])
-
-    # normalization_input = prompt_input_options(normalization_options_list)
-    # if normalization_input == normalization_options_list[0]:
     df_data = stationary_normalization(df, c.FL_FORCE_COL, True)
     df_data = stationary_normalization(df, c.FR_FORCE_COL, True)
     df_data = stationary_normalization(df, c.RL_FORCE_COL, True)
@@ -654,7 +664,6 @@ def downforce_analysis(df):
     # for col in FORCE_COLS:
     downforce_plot = var1_vs_var2_graph(df_downforce, c.SPEED_COL, c.DOWNFORCE_COL, plot_type='scatter', marker='o', single_plot_t_f=True)
         # plots_list.append(plot)
-    
     # coastdown_output_pdf = matplotlib.backends.backend_pdf.PdfPages(coastdown_pdf_path)
     # coastdown_output_pdf.savefig(downforce_plot)
     # coastdown_output_pdf.close()

@@ -1,17 +1,9 @@
-# Problem 
-# Cannot have two files dependant on each other.
-# functions.py cannot import variables from gui.py (for the IntVars/StringVars)
-# while gui.py imports functions.py...
-# Need solution
-# Solution: Use the GUI variables as data inputs, do not reference in functions.py
-# Create helper functions to create and store the dataframe variables
-
 # To do:
 # - Create function to create treeviews (decluter) DONE
 # - Create widget to toggle limp mode parameters DONE
 # - Figure out how to make the Graph buttons work individually for oil analysis
-# - Implement % change graph
-# - Restructure plotting functions... way too cluttered with too many arguments
+# - Implement % change graph DONE
+# - Restructure plotting functions... way too cluttered with too many arguments. Make individual plots
 # - For functions.py, create separate files for unique functions (downforce, oil...)
 # - Look into classes and reformatting GUI structure (backlog)
 
@@ -112,8 +104,6 @@ def main_menu_page():
     root.grid_columnconfigure(1, weight=2)
     root.grid_columnconfigure(2, weight=1)
     # temp
-
-
 
     ## Frame for file dialog
     frame_main = LabelFrame(root, text='', font=18, bd=2, relief='ridge')
@@ -316,6 +306,10 @@ def select_datafile2(treeview: list, file_label):
     return None
 
 
+def export_df_to_csv(df, output_location):
+    df.to_csv(output_location, index=False)
+
+
 def create_window(window_name):
     graph_window = tk.Toplevel(root)
     graph_window.wm_title(window_name)
@@ -457,12 +451,17 @@ def basic_stats_page():
     button1 = Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
     button1.place(y=30, relx=.25, width=80, anchor=CENTER)
 
-    button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
+    button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1]))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
     # button3 = Button(button_frame, text='Process Data', command=lambda: session_analysis(df_data, var_col_choice))
     button3 = Button(button_frame, text='Process Data', command=lambda: output_session_analysis(basic_stats(df_data1, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()), tree2_data))
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
+
+    # test
+    export_button = Button(tree2_data, text='Export Data', command=lambda: export_df_to_csv(df_sector_analysis, c.SECTOR_ANALYSIS_PATH))
+    export_button.pack(anchor='se', side='bottom')
+    # test
 
     ## Options
     # col_options_list; this list variable could update when a file is inputed and filled in with available columns
@@ -561,6 +560,9 @@ def sector_analysis_page():
         )
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
     
+    export_button = Button(treeview3_frame, text='Export Data', command=lambda: export_df_to_csv(df_sector_analysis, c.SECTOR_ANALYSIS_PATH))
+    export_button.pack(padx=15, pady=15, anchor='se', side='bottom')
+
     ## Options
     optionmenu_var_col = OptionMenu(button_frame, var_col_choice, *col_options_list, command=lambda x: print(f'OptionMenu: {x}'))
     optionmenu_var_col.place(y=110, relx=.25, anchor=CENTER)
@@ -680,7 +682,7 @@ def coast_down_page():
     
     # Graph Buttons
     # graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
-    graph_button1 = Button(plot1_frame, text='Plot Downforce', command=lambda: popup_graph(
+    graph_button1 = Button(plot1_frame, text='Graph', command=lambda: popup_graph(
         downforce_analysis(df_data1),
         create_window(graph_button1['text'])))
 
@@ -804,23 +806,27 @@ def limp_mode_page():
 
 def output_session_analysis(df, treeview):
     # helpfer function to get dataframe from session_analysis and display to GUI
+    clear_treeview([treeview], None)
     display_csv(treeview, df)
 
     return df
 
 
 def output_sector_analysis(df, treeview):
-    # helpfer function to get dataframe from session_analysis and display to GUI
-    clear_treeview([treeview], None)
+    # helper function to get dataframe from session_analysis and display to GUI
+    global df_sector_analysis
     
-    df['Stats'] = c.SECTOR_STATS_LABELS
+    clear_treeview([treeview], None)
+    df_sector_analysis = df
 
-    first_column = df.pop('Stats')
-    df.insert(0, 'Stats', first_column)
+    df_sector_analysis['Stats'] = c.SECTOR_STATS_LABELS
 
-    display_csv(treeview, df)
+    first_column = df_sector_analysis.pop('Stats')
+    df_sector_analysis.insert(0, 'Stats', first_column)
 
-    return df
+    display_csv(treeview, df_sector_analysis)
+
+    return df_sector_analysis
 
 
 def output_downforce_graph(plot, treeview):
