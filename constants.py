@@ -1,3 +1,19 @@
+# File saving variables
+import os
+from os.path import dirname
+from datetime import datetime
+
+date = datetime.now()
+timestamp = date.strftime('%m-%d-%Y_%H-%M-%S')
+path_script = dirname(os.path.abspath(__file__)) + '\\'
+output_path = path_script + 'Output' + '\\'
+if not os.path.exists(output_path):
+    os.makedirs(output_path)
+    
+SESSION_ANALYSIS_PATH = output_path + '/session_analysis_' + timestamp + '.csv'
+SECTOR_ANALYSIS_PATH = output_path + '/sector_analysis_' + timestamp + '.csv'
+
+
 # Data filtering/processing constants
 MIN_STATIONARY_ENTRIES = 50 # Minimum number of occurances (at a distance) to be considered stationary
 ROWS_TO_SKIP = 13 # Used to separate # deprecated
@@ -47,4 +63,4 @@ HI_QUANTILE = 0.99
 MAX_TEMP_DIFF_FROM_AVG = 7
 
 # Matplotlib line colors
-colors_list = ['red', 'blue', 'green', 'black', 'yellow', 'purple', 'orange', 'slategrey', 'teal', 'lime', 'gold', 'aqua', 'pink', 'fuchsia', 'aquamarine', 'royalblue', 'bisque', 'darkviolet']
+COLORS_LIST = ['red', 'blue', 'green', 'black', 'yellow', 'purple', 'orange', 'slategrey', 'teal', 'lime', 'gold', 'aqua', 'pink', 'fuchsia', 'aquamarine', 'royalblue', 'bisque', 'darkviolet']
