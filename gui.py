@@ -22,6 +22,9 @@
 ####################################################################
 
 from functions import *
+from sector_analysis import init_sector_analysis
+from downforce_analysis import init_downforce_analysis
+from oil_analysis import init_oil_analysis
 
 import tkinter as tk
 from tkinter import * # remove * and add used functions later
@@ -555,7 +558,7 @@ def sector_analysis_page():
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
     # **
     button4 = Button(button_frame, text='Process Data', command=lambda: output_sector_analysis(
-        sector_analysis(df_data1, df_reference_file, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()),
+        init_sector_analysis(df_data1, df_reference_file, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()),
         tree3_data)
         )
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
@@ -683,7 +686,7 @@ def coast_down_page():
     # Graph Buttons
     # graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
     graph_button1 = Button(plot1_frame, text='Graph', command=lambda: popup_graph(
-        downforce_analysis(df_data1),
+        init_downforce_analysis(df_data1),
         create_window(graph_button1['text'])))
 
     graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
@@ -762,7 +765,7 @@ def limp_mode_page():
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
     # button4 = Button(button_frame, text='Process Data', command=lambda: plot_test3([plot1_frame, plot2_frame, plot3_frame]))
-    button4 = Button(button_frame, text='Process Data', command=lambda: limp_mode_v2([df_data1, df_data2], int(spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
+    button4 = Button(button_frame, text='Process Data', command=lambda: init_oil_analysis([df_data1, df_data2], int(spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
 
     spinbox1 = Spinbox(button_frame, from_=0, to=99, textvariable=spinbox_max_temp_diff_from_avg)
