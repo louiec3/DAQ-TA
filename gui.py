@@ -25,6 +25,7 @@ from functions import *
 from sector_analysis import init_sector_analysis
 from downforce_analysis import init_downforce_analysis
 from oil_analysis import init_oil_analysis
+import constants as c
 
 import tkinter as tk
 from tkinter import * # remove * and add used functions later
@@ -142,8 +143,6 @@ def main_menu_page():
 
 
 def display_csv(treeview, df):
-    print(type(df))
-    print(list(df.columns))
     ## Code to display dataframe in tree-view
     treeview['columns'] = list(df.columns) # ex) data['attribute']
     treeview['show'] = 'headings'
@@ -833,7 +832,7 @@ def output_sector_analysis(df, treeview):
 
 
 def output_downforce_graph(plot, treeview):
-    # helpfer function to get dataframe from session_analysis and display to GUI
+    # helper function to get dataframe from session_analysis and display to GUI
     # df = df.to_frame()
     # ** create constant for the list below\
 
