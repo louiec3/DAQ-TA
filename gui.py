@@ -2,10 +2,16 @@
 # - Create function to create treeviews (decluter) DONE
 # - Create widget to toggle limp mode parameters DONE
 # - Figure out how to make the Graph buttons work individually for oil analysis
-# - Implement % change graph DONE
+# - Implement % change graph DONE(?)
 # - Restructure plotting functions... way too cluttered with too many arguments. Make individual plots
-# - For functions.py, create separate files for unique functions (downforce, oil...)
+# - For functions.py, create separate files for unique functions (downforce, oil...) DONE
 # - Look into classes and reformatting GUI structure (backlog)
+
+# Bugs
+# Global variables... 
+# - When you run downforce then oil analysis, the downforce plot is
+# visible in the first oil graph
+# - Export button only exports once... B/c the date.now func only runs at startup
 
 ## Note
 # Look into storing text in a txt file and references that text
@@ -76,18 +82,6 @@ def clear_page():
 
 
 def main_btn():
-    # temp
-    # root.grid_rowconfigure(0, weight=1)
-    # root.grid_rowconfigure(1, weight=3)
-    # root.grid_rowconfigure(2, weight=3)
-    # root.grid_rowconfigure(3, weight=3)
-
-    # root.grid_columnconfigure(0, weight=2)
-    # root.grid_columnconfigure(1, weight=2)
-    # root.grid_columnconfigure(2, weight=1)
-    # temp
-
-
     button_main = Button(root, text=' Main Menu ', command=lambda: main_menu_page())
     button_main.place(x=0, y=0)
 
@@ -324,7 +318,7 @@ def create_window(window_name):
     
 def create_plot_test():
     # fig = plt.Figure(figsize=(8, 4), dpi=100)
-    fig = plt.Figure(figsize=(5.3, 3), dpi=100, layout='tight')
+    fig = plt.Figure(figsize=(8, 4.5), dpi=200, layout='tight')
     t = np.arange(0, 3, .01)
     ax = fig.add_subplot()
     line, = ax.plot(t, 2 * np.sin(2 * np.pi * t))
@@ -425,7 +419,7 @@ def basic_stats_page():
     ## Page layout
     header_frame = LabelFrame(root, bd=1, relief='flat')
     treeview1_frame = LabelFrame(root, text='Session Data', font=14, bd=2, relief='ridge')
-    treeview2_frame = LabelFrame(root, text='Basic Analysis', font=14, bd=2, relief='ridge')
+    treeview2_frame = LabelFrame(root, text='Session Analysis', font=14, bd=2, relief='ridge')
     button_frame = LabelFrame(root, text='Options', font=14, bd=2, relief='ridge')
     info_frame = LabelFrame(root, text='Info', font=14, bd=2, relief='ridge')
 
@@ -485,14 +479,18 @@ def basic_stats_page():
     stat1_label = Label(info_frame, text=' ', wraplength=350, justify=LEFT)
     stat1_label.place(y=75, x=10)
 
-    stat2_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat2_label = Label(info_frame, text='''
+                                    Mandatory columns:\n
+                                    Time, Distance
+                                    '''
+                                    , wraplength=350, justify=LEFT)
     stat2_label.place(y=95, x=10)
 
-    stat3_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat3_label = Label(info_frame, text='Time, Distance', wraplength=350, justify=LEFT)
     stat3_label.place(y=115, x=10)
     
-    stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat4_label.place(y=135, x=10)
+    # stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    # stat4_label.place(y=135, x=10)
     
     main_btn()
 
@@ -587,14 +585,14 @@ def sector_analysis_page():
     stat1_label = Label(info_frame, text=' ', wraplength=350, justify=LEFT)
     stat1_label.place(y=75, x=10)
 
-    stat2_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat2_label = Label(info_frame, text='Mandatory columns: ', wraplength=350, justify=LEFT)
     stat2_label.place(y=95, x=10)
 
-    stat3_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat3_label = Label(info_frame, text='Time, Distance ', wraplength=350, justify=LEFT)
     stat3_label.place(y=115, x=10)
     
-    stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat4_label.place(y=135, x=10)
+    # stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    # stat4_label.place(y=135, x=10)
 
     main_btn()
 
@@ -673,14 +671,15 @@ def coast_down_page():
     stat1_label = Label(info_frame, text=' ', wraplength=350, justify=LEFT)
     stat1_label.place(y=75, x=10)
 
-    stat2_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat2_label = Label(info_frame, text='Mandatory columns:', wraplength=350, justify=LEFT)
     stat2_label.place(y=95, x=10)
 
-    stat3_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat3_label = Label(info_frame, text='Time, Distance, YawRate, Front_Left_Forc, Front_Right_Forc, Rear_Right_Force, Rear_Left_Force, S8_tps1, F_Brake_Press, R_Brake_Pres, GPS_Speed',
+        wraplength=350, justify=LEFT)
     stat3_label.place(y=115, x=10)
     
-    stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat4_label.place(y=135, x=10)
+    # stat4_label = Label(info_frame, text='...', wraplength=350, justify=LEFT)
+    # stat4_label.place(y=135, x=10)
     
     # Graph Buttons
     # graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
@@ -782,14 +781,14 @@ def limp_mode_page():
     stat1_label = Label(info_frame, text=' ', wraplength=350, justify=LEFT)
     stat1_label.place(y=75, x=10)
 
-    stat2_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat2_label = Label(info_frame, text='Mandatory columns:', wraplength=350, justify=LEFT)
     stat2_label.place(y=95, x=10)
 
-    stat3_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
+    stat3_label = Label(info_frame, text='Time, Distance, S8_RPM, S*eot, S8_ect1, S8_eop', wraplength=350, justify=LEFT)
     stat3_label.place(y=115, x=10)
     
-    stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-    stat4_label.place(y=135, x=10)
+    # stat4_label = Label(info_frame, text='... ', wraplength=350, justify=LEFT)
+    # stat4_label.place(y=135, x=10)
     
     # Graph Buttons
     graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
