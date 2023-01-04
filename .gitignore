@@ -1,12 +1,14 @@
+pyvenv.cfg
 venv
 Include
 Lib
 Scripts
 Unneeded
-pyvenv.cfg
-test.py
-test2.py
 __pycache__
 Output
 Demo Files
 Test_Input
+test.py
+test2.py
+sectors_trackmap.py
+test.py

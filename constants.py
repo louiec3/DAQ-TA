@@ -10,8 +10,8 @@ output_path = path_script + 'Output' + '\\'
 if not os.path.exists(output_path):
     os.makedirs(output_path)
     
-SESSION_ANALYSIS_PATH = output_path + '/session_analysis_' + timestamp + '.csv'
-SECTOR_ANALYSIS_PATH = output_path + '/sector_analysis_' + timestamp + '.csv'
+session_analysis_path = output_path + '/session_analysis_' + timestamp + '.csv'
+sector_analysis_path = output_path + '/sector_analysis_' + timestamp + '.csv'
 
 
 # Data filtering/processing constants
@@ -34,6 +34,9 @@ N_LBF_CONVERSION = 4.448 # Newtons to Lbf conversion factor
 TIME_COL = 'Time (sec)'
 DISTANCE_COL = 'Distance (km)'
 
+GPS_LATITUDE_COL = 'GPS_Latitude (#)'
+GPS_LONGITUDE_COL = 'GPS_Longitude (#)'
+
 THROTTLE_COL = 'S8_tps1 (%)'
 FBRAKE_COL = 'F_Brake_Press (PSI)'
 RBRAKE_COL = 'R_Brake_Pres (PSI)'
@@ -52,6 +55,8 @@ FR_FORCE_COL = 'Front_Right_Forc (#)'
 RL_FORCE_COL = 'Rear_Left_Force (#)'
 RR_FORCE_COL = 'Rear_Right_Force (#)'
 FORCE_COLS = [FL_FORCE_COL, FR_FORCE_COL, RL_FORCE_COL, RR_FORCE_COL]
+
+FR_PULL_ROD_FORC_COL = 'FR_Pull_Rod_Forc (#)'
 
 # Limp Mode Outlier Removal Constants
 ROLLING_SIGMA = 2
