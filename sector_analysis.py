@@ -1,8 +1,8 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 
 import constants as c
 from functions import stationary_normalization, remove_stationary
-
 
 def convert_to_seconds(df, col):
     df['Min'] = df[col].str.split(':').str[0].astype(int)
@@ -83,37 +83,95 @@ def sector_stats(df, var_col):
 
 
 
-def sector_dataframe(df1, df2):
-    ## convert time to seconds (start and end time vars are given as mm:ss.ms, csv reads only ss.ms)
-    
+def sectors_dataframe(df1, df2):
+    # convert time to seconds (start and end time vars are given as mm:ss.ms, csv reads only ss.ms)
+
     sectors_cellA2 = str(df2.iloc[0]['Sector Start']) # ** covert to constant
     print(f'A2: {sectors_cellA2}')
 
     if ':' in sectors_cellA2:
         print('Time Sectors')
         start_list, end_list = sector_times(df2)
-        df_list = []
+        df_sectors_list = []
         for start_time, end_time in zip(start_list, end_list):
             # start_time = round(start, 1)
             # end_time = round(end, 1)
             df_sector_temp = df1[(df1[c.TIME_COL] >= start_time) & (df1[c.TIME_COL] <= end_time)]
-            df_list.append(df_sector_temp)
+            df_sectors_list.append(df_sector_temp)
     else:
         print('Distance Sectors')
         start_list, end_list = sector_distances(df2)
-        df_list = []
+        df_sectors_list = []
         for start_distance, end_distance in zip(start_list, end_list):
             df_sector_temp = df1[(df1[c.DISTANCE_COL] >= start_distance) & (df1[c.DISTANCE_COL] <= end_distance)]
-            df_list.append(df_sector_temp)
+            df_sectors_list.append(df_sector_temp)
         
-    df_all_sectors = pd.concat(df_list)
+    df_all_sectors = pd.concat(df_sectors_list)
     
-    return df_all_sectors
+    return df_sectors_list, df_all_sectors
 
 
+def annotate_max(df, var_col, ax):
+    x = c.GPS_LATITUDE_COL
+    y = c.GPS_LONGITUDE_COL
+
+    max_val_index = df[var_col].idxmax()
+    max_val = df.iloc[max_val_index][var_col]
+    x_max = df.iloc[max_val_index][x]
+    y_max = df.iloc[max_val_index][y]
+    x_coord = ax.get_xlim()[0]
+    y_coord = ax.get_ylim()[1]
+
+    bbox_args = dict(boxstyle="round", fc="0.8")
+    arrow_args = dict(arrowstyle="->")
+    annotation = ax.annotate(f'Max: {max_val}',
+                    xy=(x_max, y_max),
+                    xytext=(x_coord, y_coord),
+                    ha="left", va="bottom",
+                    bbox=bbox_args,
+                    arrowprops=arrow_args)
+    annotation.draggable()
+
+    return None
 
 
-def init_sector_analysis(df_data, df_sectors, col, normalize_stationary_bool, rmv_stationary_bool):
+def plot_trackmap(df_data, df_sectors, var_col):
+    x = c.GPS_LATITUDE_COL
+    y = c.GPS_LONGITUDE_COL
+
+    df_sectors_list, df_all_sectors = sectors_dataframe(df_data, df_sectors)
+
+    fig, ax = plt.subplots()
+
+    plt.title(f'Trackmap: {var_col}')
+    ax.plot(df_data[x], df_data[y], color='lightgrey', marker='.', )
+
+    bbox_args = dict(boxstyle="round", fc="black")
+    arrow_args = dict(arrowstyle="->")
+    annotation = ax.annotate(text='',
+                    xy=(df_data[x][4], df_data[y][4]),
+                    xytext=(df_data[x][0], df_data[y][0]),
+                    ha="left", va="bottom",
+                    bbox=bbox_args,
+                    arrowprops=arrow_args)
+
+    i=0
+    for sector, new_color in zip(df_sectors_list, c.COLORS_LIST):
+        i+=1
+        ax.plot(sector[x], sector[y], color=new_color, marker='.', label=f'Sector {i}')
+        ax.legend(loc='upper right')
+
+    annotate_max(df_all_sectors, var_col, ax)
+
+    plt.gca().xaxis.set_major_locator(plt.NullLocator())
+    plt.gca().yaxis.set_major_locator(plt.NullLocator())
+    plt.show(block=False)
+    # plt.show()
+
+    return None
+
+
+def init_sector_analysis(df_data, df_sectors, var_col, normalize_stationary_bool, rmv_stationary_bool):
     # Sector analysis by time interval
     # ** Future: Add Time or Distance interval 
     # (Distance could be easier since corners will always be the same distance from 
@@ -121,26 +179,25 @@ def init_sector_analysis(df_data, df_sectors, col, normalize_stationary_bool, rm
     print(normalize_stationary_bool)
     print(rmv_stationary_bool)
     
-    df_sector_data = sector_dataframe(df_data, df_sectors)
+    _, df_sector_data = sectors_dataframe(df_data, df_sectors)
     
     if normalize_stationary_bool is True:
         print('Normalizing data')
-        df_sector_data = stationary_normalization(df_sector_data, col, rmv_stationary_bool)
-        df_corner_stats = sector_stats(df_sector_data, col)
+        df_sector_data = stationary_normalization(df_sector_data, var_col, rmv_stationary_bool)
+        df_corner_stats = sector_stats(df_sector_data, var_col)
         
-        return df_corner_stats
-    
     elif normalize_stationary_bool is False and rmv_stationary_bool is True:
         print('Removing Stationary Only')
         df_sector_data = remove_stationary(df_sector_data)
-        df_corner_stats = sector_stats(df_sector_data, col)
+        df_corner_stats = sector_stats(df_sector_data, var_col)
 
-        return df_corner_stats
-    
     else:
         print('Raw Data')
         print(df_sector_data)
-        df_corner_stats = sector_stats(df_sector_data, col)
+        df_corner_stats = sector_stats(df_sector_data, var_col)
 
-        return df_corner_stats
+
+        plot_trackmap(df_data, df_sectors, var_col)
+
+    return df_corner_stats
 

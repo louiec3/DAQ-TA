@@ -4,7 +4,7 @@ import pandas as pd
 
 import constants as c
 from functions import custom_round
-
+pd.set_option('mode.chained_assignment', None)
 
 def split_laps(df):
     index_list = df.index[df[c.TIME_COL] == 0].tolist()
@@ -81,7 +81,7 @@ def limp_mode_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f, lap_nu
     if plot_type.lower() == 'scatter':
         plt.scatter(x, y, **plot_styles_dict)
     elif plot_type.lower() == 'line':
-        plt.plot(x, y, **plot_styles_dict, label=f'Lap {lap_num}')
+        plt.plot(x, y, **plot_styles_dict, label=f'Session: {lap_num}')
     plt.autoscale(enable=True, axis='both', tight=None)
 
     # test Start
@@ -148,19 +148,19 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
 
         hottest_lap_avg = max(avg_temps_list)
         
-        print()
-        print(f'# of Laps: {len(df_laps_list)}')
+        # print()
+        # print(f'# of Laps: {len(df_laps_list)}')
 
         usable_laps_list = []
         for lap in df_laps_list:
             min_temp_diff = abs(hottest_lap_avg - lap[c.COOLANT_TEMP_COL].min())
             max_temp_diff = abs(hottest_lap_avg - lap[c.COOLANT_TEMP_COL].max())
             
-            print(f'Min: {lap[c.COOLANT_TEMP_COL].min()}')
-            print(f'Min diff: {min_temp_diff}')
+            # print(f'Min: {lap[c.COOLANT_TEMP_COL].min()}')
+            # print(f'Min diff: {min_temp_diff}')
             
-            print(f'Max: {lap[c.COOLANT_TEMP_COL].max()}')
-            print(f'Max diff: {max_temp_diff}')
+            # print(f'Max: {lap[c.COOLANT_TEMP_COL].max()}')
+            # print(f'Max diff: {max_temp_diff}')
 
             # if (min_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG) and (max_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG):
             if (min_temp_diff < max_oil_temp_diff) and (max_temp_diff < max_oil_temp_diff):
@@ -170,11 +170,13 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
         df_good_laps = pd.concat(usable_laps_list)
         df_sessions_list.append(df_good_laps)
 
+    plt.cla() # Removes previous graphs. Shouldnt be needed when we move to Object Oriented
     k = -1
     for df_session in df_sessions_list:
         k+=1
         # session_name = os.path.basename(csv_files[k])
-        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 0: {k}', color=c.COLORS_LIST[k])
+        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'Session: {k+1}', color=c.COLORS_LIST[k])
+        # df_session.to_csv(f'session {k}.csv', index=False)
     plt.figure('test1')
     
     
@@ -188,7 +190,7 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
     max_rpm = max(max_rpm)
     
 
-    k = 0
+    k = -1
     for df_session in df_sessions_list:
         k+=1
         # session_name = os.path.basename(csv_files[k])
