@@ -4,7 +4,9 @@ import pandas as pd
 
 import constants as c
 from functions import custom_round
+
 pd.set_option('mode.chained_assignment', None)
+
 
 def split_laps(df):
     index_list = df.index[df[c.TIME_COL] == 0].tolist()
@@ -170,14 +172,14 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
         df_good_laps = pd.concat(usable_laps_list)
         df_sessions_list.append(df_good_laps)
 
-    plt.cla() # Removes previous graphs. Shouldnt be needed when we move to Object Oriented
+    # plt.cla() # Removes previous graphs. Shouldnt be needed when we move to Object Oriented
     k = -1
     for df_session in df_sessions_list:
         k+=1
         # session_name = os.path.basename(csv_files[k])
-        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'Session: {k+1}', color=c.COLORS_LIST[k])
+        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'{k+1}', color=c.COLORS_LIST[k])
         # df_session.to_csv(f'session {k}.csv', index=False)
-    plt.figure('test1')
+    plt.figure('Coolant Temp vs. Time')
     
     
     # loop sessions to set max and min ticks for graph
@@ -193,12 +195,11 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
     k = -1
     for df_session in df_sessions_list:
         k+=1
-        # session_name = os.path.basename(csv_files[k])
-        limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 1: {k}', color=c.COLORS_LIST[k])
-        # plt.xticks(np.arange(min(df_session[c.RPM_COL]), max(df_session[c.RPM_COL]), 500))
-        # plt.xticks(np.arange(custom_round(min(df_session[c.RPM_COL]), 1000), custom_round(max(df_session[c.RPM_COL]), 1000), 500))
+        limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 11111: {k}', color=c.COLORS_LIST[k])
+        # ** Lap numbers do not display correctly because of the single_plot_t_f=False Flag
+        # Need reword of graphing function
         plt.xticks(np.arange(custom_round(min_rpm, 1000), custom_round(max_rpm, 1000), 500))
-    plt.figure('test2')
+    plt.figure('RPM % Change')
     
     
     sessions_groupby_rpm_list = []
@@ -218,9 +219,9 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
 
     # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[0]), color=c.COLORS_LIST[0])
     # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[1]), color=c.COLORS_LIST[1])
-    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 2: {k}', color=c.COLORS_LIST[0])
-    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 3: {k}', color=c.COLORS_LIST[1])
-
+    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'{k}', color=c.COLORS_LIST[0])
+    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'{k}', color=c.COLORS_LIST[1])
+    plt.figure('RPM % Change')
 
     plt.show()
 
