@@ -455,7 +455,7 @@ def basic_stats_page():
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
     # test
-    export_button = Button(tree2_data, text='Export Data', command=lambda: export_df_to_csv(df_sector_analysis, c.SECTOR_ANALYSIS_PATH))
+    export_button = Button(tree2_data, text='Export Data', command=lambda: export_df_to_csv(df_sector_analysis, c.sector_analysis_path))
     export_button.pack(anchor='se', side='bottom')
     # test
 
@@ -560,7 +560,7 @@ def sector_analysis_page():
         )
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
     
-    export_button = Button(treeview3_frame, text='Export Data', command=lambda: export_df_to_csv(df_sector_analysis, c.SECTOR_ANALYSIS_PATH))
+    export_button = Button(treeview3_frame, text='Export Data', command=lambda: export_df_to_csv(df_sector_analysis, c.sector_analysis_path))
     export_button.pack(padx=15, pady=15, anchor='se', side='bottom')
 
     ## Options
@@ -661,7 +661,9 @@ def coast_down_page():
     button2 = Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
-    button3 = Button(button_frame, text='Process Data', command=lambda: False)
+    button3 = Button(button_frame, text='Process Data', command=lambda: popup_graph(
+        init_downforce_analysis(df_data1),
+        create_window('Downforce vs Speed')))
     button3.place(y=70, relx=.75, width=80, anchor=CENTER)
     
     ## Statistics
@@ -682,12 +684,8 @@ def coast_down_page():
     # stat4_label.place(y=135, x=10)
     
     # Graph Buttons
-    # graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
-    graph_button1 = Button(plot1_frame, text='Graph', command=lambda: popup_graph(
-        init_downforce_analysis(df_data1),
-        create_window(graph_button1['text'])))
-
-    graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
+    # graph_button1 = Button(plot1_frame, text='Graph', command=lambda: False)
+    # graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
 
     main_btn()
 
@@ -791,14 +789,14 @@ def limp_mode_page():
     # stat4_label.place(y=135, x=10)
     
     # Graph Buttons
-    graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
-    graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
+    # graph_button1 = Button(plot1_frame, text='Graph 1', command=lambda: create_window(graph_button1['text']))
+    # graph_button1.place(rely=.5, relx=.5, width=80, anchor=CENTER)
 
-    graph_button2 = Button(plot2_frame, text='Graph 2', command=lambda: create_window(graph_button2['text']))
-    graph_button2.place(rely=.5, relx=.5, width=80, anchor=CENTER)
+    # graph_button2 = Button(plot2_frame, text='Graph 2', command=lambda: create_window(graph_button2['text']))
+    # graph_button2.place(rely=.5, relx=.5, width=80, anchor=CENTER)
 
-    graph_button3 = Button(plot3_frame, text='Graph 3', command=lambda: create_window(graph_button3['text']))
-    graph_button3.place(rely=.5, relx=.5, width=80, anchor=CENTER)
+    # graph_button3 = Button(plot3_frame, text='Graph 3', command=lambda: create_window(graph_button3['text']))
+    # graph_button3.place(rely=.5, relx=.5, width=80, anchor=CENTER)
     
     main_btn()
 

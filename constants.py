@@ -2,10 +2,19 @@
 import os
 from os.path import dirname
 from datetime import datetime
+import sys
 
 date = datetime.now()
 timestamp = date.strftime('%m-%d-%Y_%H-%M-%S')
-path_script = dirname(os.path.abspath(__file__)) + '\\'
+
+# determine if application is a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    path_script = os.path.dirname(sys.executable) + '\\'
+elif __file__:
+    path_script = os.path.dirname(__file__) + '\\'
+
+print(path_script)
+
 output_path = path_script + 'Output' + '\\'
 if not os.path.exists(output_path):
     os.makedirs(output_path)
