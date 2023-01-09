@@ -4,7 +4,9 @@
 
 import tkinter as tk
 from tkinter import ttk
-import customtkinter as ctk
+# import customtkinter as ctk # Does not work with pyinstaller --onefile
+# https://github.com/TomSchimansky/CustomTkinter/wiki/Packaging
+# Look into https://nuitka.net/ for packaging
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -210,7 +212,7 @@ class SectorAnalysisPage(tk.Frame):
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         page_title.config(font=('arial', 14))
         
-        main_btn= MainMenuButton(header_frame)
+        main_btn = MainMenuButton(header_frame)
 
         # Treeviews
         tree1 = TreeViewWidget(treeview1_frame)
@@ -266,14 +268,73 @@ class SectorAnalysisPage(tk.Frame):
         
         # stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
         # stat4_label.place(y=135, x=10)
-
-
 class CoastDownPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text='This is Page 2').pack(side='top', fill='x', pady=10)
-        tk.Button(self, text='Return to start page',
-                  command=lambda: parent.switch_frame(MainMenuPage)).pack()
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        container = tk.LabelFrame(self, text='Page Container: Session', relief='ridge')
+        container.grid(row=0, column=0, sticky='nsew')
+        
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_rowconfigure(1, weight=2)
+        container.grid_rowconfigure(2, weight=2)
+        container.grid_rowconfigure(3, weight=2)
+
+        container.grid_columnconfigure(0, weight=2)
+        container.grid_columnconfigure(1, weight=2)
+        container.grid_columnconfigure(2, weight=2)
+
+        ## Page layout
+        header_frame = tk.LabelFrame(container, bd=1, relief='flat')
+        treeview1_frame = tk.LabelFrame(container, text='Coastdown Data', font=14, bd=2, relief='ridge')
+        plot1_frame = tk.LabelFrame(container, text='Downforce vs Speed', font=14, bd=2, relief='ridge')
+        button_frame = tk.LabelFrame(container, text='Options', font=14, bd=2, relief='ridge')
+        info_frame = tk.LabelFrame(container, text='Info', font=14, bd=2, relief='ridge')
+
+        header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=2, pady=2)
+        treeview1_frame.grid(row=1, rowspan=2, column=0, columnspan=2, sticky='nsew', padx=2, pady=2)
+        plot1_frame.grid(row=1, rowspan=2, column=2, sticky='nsew', padx=2, pady=2)
+        button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
+        info_frame.grid(row=3, column=1, columnspan=2, sticky='nsew', padx=2, pady=2)
+        
+        # Widgets
+        page_title = tk.Label(header_frame, text='UConn FSAE DAQ Multitool')
+        page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
+        page_title.config(font=('arial', 14))
+        
+        main_btn = MainMenuButton(header_frame)
+
+        ## Treeview 1 widget   
+        tree1 = TreeViewWidget(treeview1_frame)
+
+        ## Main Buttons
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
+        button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
+
+        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
+        button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
+
+        button3 = tk.Button(button_frame, text='Process Data', command=lambda: popup_graph(
+            init_downforce_analysis(df_data1),
+            create_window('Downforce vs Speed')))
+        button3.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
+        
+        ## Statistics
+        filepath_label1 = tk.Label(info_frame, text='File 1: ', wraplength=450, justify=tk.LEFT)
+        filepath_label1.place(y=10, x=10)
+
+        stat1_label = tk.Label(info_frame, text=' ', wraplength=350, justify=tk.LEFT)
+        stat1_label.place(y=75, x=10)
+
+        stat2_label = tk.Label(info_frame, text='Mandatory columns:', wraplength=350, justify=tk.LEFT)
+        stat2_label.place(y=95, x=10)
+
+        stat3_label = tk.Label(info_frame, text='Time, Distance, YawRate, Front_Left_Forc, Front_Right_Forc, Rear_Right_Force, Rear_Left_Force, S8_tps1, F_Brake_Press, R_Brake_Pres, GPS_Speed',
+            wraplength=350, justify=tk.LEFT)
+        stat3_label.place(y=115, x=10)
 
 class OilAnalysisPage(tk.Frame):
     def __init__(self, parent):
@@ -281,6 +342,7 @@ class OilAnalysisPage(tk.Frame):
         tk.Label(self, text='This is Page 2').pack(side='top', fill='x', pady=10)
         tk.Button(self, text='Return to start page',
                   command=lambda: parent.switch_frame(MainMenuPage)).pack()
+
 
 class MainMenuButton():
     def __init__(self, parent):
