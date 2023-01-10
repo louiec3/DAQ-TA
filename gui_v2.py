@@ -3,15 +3,17 @@
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 # import customtkinter as ctk # Does not work with pyinstaller --onefile
 # https://github.com/TomSchimansky/CustomTkinter/wiki/Packaging
 # Look into https://nuitka.net/ for packaging
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+import pandas as pd
 
 import constants as c
+from functions import format_data
 
 class App(tk.Tk):
     def __init__(self):
@@ -32,15 +34,21 @@ class App(tk.Tk):
         # Used in limp_mode_page
         self.spinbox_max_temp_diff_from_avg = tk.IntVar(value=c.MAX_TEMP_DIFF_FROM_AVG)
 
+        # Dataframe dictionary
+        # Stores temporary data files when a user input is required.
+        # Is cleared whenever the user changes pages (back to main menu)
+        self.datafiles = {}
+
         self._frame = None
         self.switch_frame(MainMenuPage)
-
 
     def switch_frame(self, frame_class):
         # Destroys current frame and replaces it with a new one.
         if self._frame is not None:
             self._frame.destroy()
         
+        self.datafiles.clear()
+
         new_frame = frame_class(self)
         
         # Set grid of parent frame
@@ -49,6 +57,18 @@ class App(tk.Tk):
         
         self._frame = new_frame
         self._frame.grid(sticky='nsew')
+
+    def select_datafile(self, data_name):
+        filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
+                                                                            ('All Files', '*.*')))
+        if filepath == '' or filepath is None:
+            return None
+
+        df_input = pd.read_fwf(filepath, header=None, encoding='ISO-8859-1').reset_index(drop=True)
+
+        df_formatted_data = format_data(df_input)
+        self.datafiles[data_name] = df_formatted_data
+        print(app.datafiles)
 
 class MainMenuPage(tk.Frame):
     def __init__(self, parent):
@@ -130,7 +150,7 @@ class SessionAnalysisPage(tk.Frame):
         tree2 = TreeViewWidget(treeview2_frame)
 
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.select_datafile('data1'))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
         button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1]))
@@ -220,10 +240,10 @@ class SectorAnalysisPage(tk.Frame):
         tree3 = TreeViewWidget(treeview3_frame)
         
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.select_datafile1(tree1, filepath_label1))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
-        button2 = tk.Button(button_frame, text='Sectors File', command=lambda: select_file_v2(tree2_data, filepath_label2))
+        button2 = tk.Button(button_frame, text='Sectors File', command=lambda: app.select_datafile2(tree2, filepath_label2))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
         button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data, tree3_data], [filepath_label1, filepath_label2]))
@@ -436,9 +456,35 @@ class TreeViewWidget(ttk.Treeview):
         self.config(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
         
         treescrollx.pack(side='bottom', fill='x')
-        treescrolly.pack(side='right', fill='y')  
+        treescrolly.pack(side='right', fill='y')
 
 
+    def display_csv(self, df):
+        ## Code to display dataframe in tree-view
+        self['columns'] = list(df.columns) # ex) data['attribute']
+        self['show'] = 'headings'
+        for column in self['columns']:
+            self.heading(column, text=column)
+        
+        df_rows = df.to_numpy().tolist()
+        for row in df_rows: # for each row in df, insert into tree view
+            self.insert('', 'end', values=row)
+
+        list_headers = df.columns.values.tolist()
+        for column in list_headers:
+            self.column(column, width=10, stretch=tk.YES)
+
+    def clear_treeview(self, lables: list):
+        # print(type(trees))
+        # for treeview in trees:
+        self.delete(*self.get_children())
+        self['columns'] = [None]
+        
+        if lables is None:
+            return None
+        else:
+            for label in lables:
+                label['text'] = label['text'].split(':')[0] + ':'
 
 if __name__ == '__main__':
     app = App()

@@ -212,7 +212,7 @@ def select_file_v2(treeview: list, file_label):
 def select_datafile1(treeview: list, file_label):
     # used to select datafiles from racestudio
     ## ** is there another way to use the df_data instead of makeing it global?
-    global df_data1
+    global df_aim_data1
 
     clear_treeview([treeview], [file_label]) # lists so we can clear multple objects
 
@@ -229,9 +229,9 @@ def select_datafile1(treeview: list, file_label):
     leading_label = file_label['text'].split(':')[0] + ':'
     file_label['text'] = f'{leading_label} {file}'
 
-    df_data1 = format_data(df_input)
+    df_aim_data1 = format_data(df_input)
 
-    display_csv(treeview, df_data1)
+    display_csv(treeview, df_aim_data1)
 
     # ** fix/convert to function later
     # if is_col_choice:
@@ -242,7 +242,7 @@ def select_datafile1(treeview: list, file_label):
         optionmenu_var_col['menu'].delete(0, 'end')
 
         # Insert list of new options (tk._setit hooks them up to var)
-        new_cols = df_data1.columns
+        new_cols = df_aim_data1.columns
         for col in new_cols:
             optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(var_col_choice, col))
 
@@ -258,7 +258,7 @@ def select_datafile1(treeview: list, file_label):
 def select_datafile2(treeview: list, file_label):
     # used to select datafiles from racestudio
     ## ** is there another way to use the df_data instead of makeing it global?
-    global df_data2
+    global df_aim_data2
 
     clear_treeview([treeview], [file_label]) # lists so we can clear multple objects
 
@@ -275,9 +275,9 @@ def select_datafile2(treeview: list, file_label):
     leading_label = file_label['text'].split(':')[0] + ':'
     file_label['text'] = f'{leading_label} {file}'
 
-    df_data2 = format_data(df_input)
+    df_aim_data2 = format_data(df_input)
 
-    display_csv(treeview, df_data2)
+    display_csv(treeview, df_aim_data2)
 
     # ** fix/convert to function later
     # if is_col_choice:
@@ -288,7 +288,7 @@ def select_datafile2(treeview: list, file_label):
         optionmenu_var_col['menu'].delete(0, 'end')
 
         # Insert list of new options (tk._setit hooks them up to var)
-        new_cols = df_data2.columns
+        new_cols = df_aim_data2.columns
         for col in new_cols:
             optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(var_col_choice, col))
 
@@ -451,7 +451,7 @@ def basic_stats_page():
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
     # button3 = Button(button_frame, text='Process Data', command=lambda: session_analysis(df_data, var_col_choice))
-    button3 = Button(button_frame, text='Process Data', command=lambda: output_session_analysis(basic_stats(df_data1, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()), tree2_data))
+    button3 = Button(button_frame, text='Process Data', command=lambda: output_session_analysis(basic_stats(df_aim_data1, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()), tree2_data))
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
     # test
@@ -555,7 +555,7 @@ def sector_analysis_page():
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
     # **
     button4 = Button(button_frame, text='Process Data', command=lambda: output_sector_analysis(
-        init_sector_analysis(df_data1, df_reference_file, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()),
+        init_sector_analysis(df_aim_data1, df_reference_file, var_col_choice.get(), normalize_stationary_bool.get(), rmv_stationary_bool.get()),
         tree3_data)
         )
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
@@ -662,7 +662,7 @@ def coast_down_page():
     button2.place(y=70, relx=.25, width=80, anchor=CENTER)
 
     button3 = Button(button_frame, text='Process Data', command=lambda: popup_graph(
-        init_downforce_analysis(df_data1),
+        init_downforce_analysis(df_aim_data1),
         create_window('Downforce vs Speed')))
     button3.place(y=70, relx=.75, width=80, anchor=CENTER)
     
@@ -761,7 +761,7 @@ def limp_mode_page():
     button3.place(y=30, relx=.75, width=80, anchor=CENTER)
 
     # button4 = Button(button_frame, text='Process Data', command=lambda: plot_test3([plot1_frame, plot2_frame, plot3_frame]))
-    button4 = Button(button_frame, text='Process Data', command=lambda: init_oil_analysis([df_data1, df_data2], int(spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
+    button4 = Button(button_frame, text='Process Data', command=lambda: init_oil_analysis([df_aim_data1, df_aim_data2], int(spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
     button4.place(y=70, relx=.75, width=80, anchor=CENTER)
 
     spinbox1 = Spinbox(button_frame, from_=0, to=99, textvariable=spinbox_max_temp_diff_from_avg)
