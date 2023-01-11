@@ -3,7 +3,7 @@
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
 
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 # import customtkinter as ctk # Does not work with pyinstaller --onefile
 # https://github.com/TomSchimansky/CustomTkinter/wiki/Packaging
 # Look into https://nuitka.net/ for packaging
@@ -13,7 +13,11 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 import pandas as pd
 
 import constants as c
-from functions import format_data
+import functions as f
+import sector_analysis as sa
+import downforce_analysis as da
+import oil_analysis as oa
+# from functions import format_data
 
 class App(tk.Tk):
     def __init__(self):
@@ -58,17 +62,46 @@ class App(tk.Tk):
         self._frame = new_frame
         self._frame.grid(sticky='nsew')
 
-    def select_datafile(self, data_name):
-        filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
-                                                                            ('All Files', '*.*')))
-        if filepath == '' or filepath is None:
-            return None
+    def select_aim_file(self, parent, data_name):
+        try: 
+            filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
+                                                                                ('All Files', '*.*')))
+            if filepath == '' or filepath is None:
+                return None
 
-        df_input = pd.read_fwf(filepath, header=None, encoding='ISO-8859-1').reset_index(drop=True)
+            df_input = pd.read_fwf(filepath, header=None, encoding='ISO-8859-1').reset_index(drop=True)
+            df_formatted_data = f.format_data(df_input)
 
-        df_formatted_data = format_data(df_input)
-        self.datafiles[data_name] = df_formatted_data
-        print(app.datafiles)
+            # this dictionary format allows us to add future information about a data file
+            data_info = {'path': filepath, 'dataframe': df_formatted_data}
+
+            self.datafiles[data_name] = data_info
+            print(app.datafiles)
+
+            return self.datafiles[data_name]['dataframe']
+
+        except:
+            messagebox.showerror('Warning', 'File is not compatible. \nEnsure the file is in the AiM format.')
+
+    def select_file(self, parent, data_name):
+        try: 
+            filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
+                                                                                ('All Files', '*.*')))
+            if filepath == '' or filepath is None:
+                return None
+
+            df_input = pd.read_csv(filepath, encoding='ISO-8859-1').reset_index(drop=True)
+
+            # this dictionary format allows us to add future information about a data file
+            data_info = {'path': filepath, 'dataframe': df_input}
+
+            self.datafiles[data_name] = data_info
+            print(app.datafiles)
+
+            return self.datafiles[data_name]['dataframe']
+
+        except:
+            messagebox.showerror('Warning', 'File is not compatible. \nEnsure the file is in the AiM format.')
 
 class MainMenuPage(tk.Frame):
     def __init__(self, parent):
@@ -81,30 +114,29 @@ class MainMenuPage(tk.Frame):
         container.grid(row=0, column=0, sticky='nsew')
         
         container.grid_rowconfigure(0, weight=1)
-        container.grid_rowconfigure(1, weight=2)
-        container.grid_rowconfigure(2, weight=2)
+        container.grid_rowconfigure(1, weight=1)
+        container.grid_rowconfigure(2, weight=1)
         # container.grid_rowconfigure(3, weight=2)
 
-        container.grid_columnconfigure(0, weight=2)
-        container.grid_columnconfigure(1, weight=2)
-        container.grid_columnconfigure(2, weight=2)
+        container.grid_columnconfigure(0, weight=3)
+        container.grid_columnconfigure(1, weight=3)
+        container.grid_columnconfigure(2, weight=3)
 
         # Page Widgets (temporary)
         for i in range(3):
             label = tk.Label(container, text=f'Test {i}')
-            # label.pack(side='top', fill='x', pady=10)
             label.grid(row=i, column=i, sticky='nsew')
         
-        btn1 = tk.Button(container, text='Page 1', command=lambda: parent.switch_frame(SessionAnalysisPage))
+        btn1 = tk.Button(container, text='Session Analysis', command=lambda: parent.switch_frame(SessionAnalysisPage))
         btn1.grid(row=0, column=0, sticky='nsew')
 
-        btn2 = tk.Button(container, text='Page 2', command=lambda: parent.switch_frame(SectorAnalysisPage))
+        btn2 = tk.Button(container, text='Sector Analysis', command=lambda: parent.switch_frame(SectorAnalysisPage))
         btn2.grid(row=1, column=0, sticky='nsew')
         
-        btn3 = tk.Button(container, text='Page 3', command=lambda: parent.switch_frame(CoastdownPage))
+        btn3 = tk.Button(container, text='Coastdown Analysis', command=lambda: parent.switch_frame(CoastdownPage))
         btn3.grid(row=2, column=0, sticky='nsew')
         
-        btn4 = tk.Button(container, text='Page 4', command=lambda: parent.switch_frame(OilAnalysisPage))
+        btn4 = tk.Button(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
         btn4.grid(row=2, column=1, sticky='nsew')
 
 class SessionAnalysisPage(tk.Frame):
@@ -150,14 +182,18 @@ class SessionAnalysisPage(tk.Frame):
         tree2 = TreeViewWidget(treeview2_frame)
 
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.select_datafile('data1'))
+        # button1 = tk.Button(button_frame, text='Data File', command=lambda: TreeViewWidget.display_csv(tree1, app.select_aim_file(self, 'data1')))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: self.ask_for_data_file(tree1, 'data1', filepath_label1))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
-        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1]))
+        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [filepath_label1]))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
         # button3 = Button(button_frame, text='Process Data', command=lambda: session_analysis(df_data, var_col_choice))
-        button3 = tk.Button(button_frame, text='Process Data', command=lambda: output_session_analysis(basic_stats(df_data1, app.var_col_choice.get(), app.normalize_stationary_bool.get(), app.rmv_stationary_bool.get()), tree2_data))
+        button3 = tk.Button(button_frame, text='Process Data', command=lambda: TreeViewWidget.display_csv(
+            tree2,
+            f.basic_stats(app.datafiles['data1']['dataframe'], app.var_col_choice.get(), app.normalize_stationary_bool.get(), app.rmv_stationary_bool.get())
+            ))
         button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
 
         # **export_button = tk.Button(tree2_data, text='Export Data', command=lambda: export_df_to_csv(df_sector_analysis, c.sector_analysis_path))
@@ -192,6 +228,13 @@ class SessionAnalysisPage(tk.Frame):
 
         stat3_label = tk.Label(info_frame, text='Time, Distance', wraplength=350, justify=tk.LEFT)
         stat3_label.place(y=115, x=10)
+
+    def ask_for_data_file(self, tree, data_name, label):
+        TreeViewWidget.display_csv(tree, app.select_aim_file(self, data_name))
+        
+        leading_label = label['text'].split(':')[0] + ':'
+        label['text'] = f'{leading_label} {app.datafiles[data_name]["path"]}'
+
 
 class SectorAnalysisPage(tk.Frame):
     def __init__(self, parent):
@@ -240,18 +283,18 @@ class SectorAnalysisPage(tk.Frame):
         tree3 = TreeViewWidget(treeview3_frame)
         
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.select_datafile1(tree1, filepath_label1))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: TreeViewWidget.display_csv(tree1, app.select_aim_file(self, 'data1')))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
-        button2 = tk.Button(button_frame, text='Sectors File', command=lambda: app.select_datafile2(tree2, filepath_label2))
+        button2 = tk.Button(button_frame, text='Sectors File', command=lambda: TreeViewWidget.display_csv(tree2, app.select_file(self, 'sectors')))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
-        button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data, tree3_data], [filepath_label1, filepath_label2]))
+        button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2, tree3], [filepath_label1, filepath_label2]))
         button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
         # **
         button4 = tk.Button(button_frame, text='Process Data', command=lambda: output_sector_analysis(
-            init_sector_analysis(df_data1, df_reference_file, app.var_col_choice.get(), app.normalize_stationary_bool.get(),app. rmv_stationary_bool.get()),
-            tree3_data)
+            tree3,
+            sa.init_sector_analysis(app.datafiles['data1']['dataframe'], app.datafiles['sectors']['dataframe'], app.var_col_choice.get(), app.normalize_stationary_bool.get(),app. rmv_stationary_bool.get()),)
             )
         button4.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
         
@@ -406,13 +449,13 @@ class OilAnalysisPage(tk.Frame):
         tree2 = TreeViewWidget(treeview2_frame)
         
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Oil File 1', command=lambda: select_datafile1(tree1_data, filepath_label1))
+        button1 = tk.Button(button_frame, text='Oil File 1', command=lambda: select_datafile1(tree1, filepath_label1))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
-        button2 = tk.Button(button_frame, text='Oil File 2', command=lambda: select_datafile2(tree2_data, filepath_label2))
+        button2 = tk.Button(button_frame, text='Oil File 2', command=lambda: select_datafile2(tree2, filepath_label2))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
-        button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data, tree2_data], [filepath_label1, filepath_label2]))
+        button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [filepath_label1, filepath_label2]))
         button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
 
         button4 = tk.Button(button_frame, text='Process Data', command=lambda: init_oil_analysis([df_data1, df_data2], int(app.spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
@@ -444,7 +487,6 @@ class MainMenuButton():
     def __init__(self, parent):
         main_menu_btn = tk.Button(parent, text='Main Menu', command=lambda: app.switch_frame(MainMenuPage))
         main_menu_btn.place(x=0, y=0)
-        
 
 class TreeViewWidget(ttk.Treeview):
     def __init__(self, parent):
@@ -474,17 +516,47 @@ class TreeViewWidget(ttk.Treeview):
         for column in list_headers:
             self.column(column, width=10, stretch=tk.YES)
 
-    def clear_treeview(self, lables: list):
-        # print(type(trees))
-        # for treeview in trees:
-        self.delete(*self.get_children())
-        self['columns'] = [None]
+    # def clear_treeview(self, trees, lables: list):
+    #     # print(type(trees))
+    #     for treeview in trees:
+    #         treeview.delete(*treeview.get_children())
+    #     treeview['columns'] = [None]
         
-        if lables is None:
-            return None
-        else:
-            for label in lables:
-                label['text'] = label['text'].split(':')[0] + ':'
+    #     if lables is None:
+    #         return None
+    #     else:
+    #         for label in lables:
+    #             label['text'] = label['text'].split(':')[0] + ':'
+
+class StatisticsFrame():
+    def __init__(self, parent):
+        pass
+
+def clear_treeview(trees, lables: list):
+    # print(type(trees))
+    for treeview in trees:
+        treeview.delete(*treeview.get_children())
+        treeview['columns'] = [None]
+    
+    if lables is None:
+        return None
+    else:
+        for label in lables:
+            label['text'] = label['text'].split(':')[0] + ':'
+
+def output_sector_analysis(treeview, df):
+    # helper function to get dataframe from session_analysis and display to GUI
+
+
+    df['Stats'] = c.SECTOR_STATS_LABELS
+
+    first_column = df.pop('Stats')
+    df.insert(0, 'Stats', first_column)
+
+    TreeViewWidget.display_csv(treeview, df)
+
+    return df
+
 
 if __name__ == '__main__':
     app = App()
