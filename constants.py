@@ -9,18 +9,18 @@ timestamp = date.strftime('%m-%d-%Y_%H-%M-%S')
 
 # determine if application is a script file or frozen exe
 if getattr(sys, 'frozen', False):
-    path_script = os.path.dirname(sys.executable) + '\\'
+    script_path = os.path.dirname(sys.executable) + '\\'
 elif __file__:
-    path_script = os.path.dirname(__file__) + '\\'
+    script_path = os.path.dirname(__file__) + '\\'
 
-print(path_script)
+print(script_path)
 
-output_path = path_script + 'Output' + '\\'
-if not os.path.exists(output_path):
-    os.makedirs(output_path)
+output_folder = script_path + 'Output' + '\\'
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
     
-session_analysis_path = output_path + '/session_analysis_' + timestamp + '.csv'
-sector_analysis_path = output_path + '/sector_analysis_' + timestamp + '.csv'
+session_analysis_path = output_folder + '/session_analysis_' + timestamp + '.csv'
+sector_analysis_path = output_folder + '/sector_analysis_' + timestamp + '.csv'
 
 
 # Data filtering/processing constants

@@ -4,10 +4,10 @@
 
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-# import customtkinter as ctk # Does not work with pyinstaller --onefile
 # https://github.com/TomSchimansky/CustomTkinter/wiki/Packaging
 # Look into https://nuitka.net/ for packaging
 
+import datetime as dt
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import pandas as pd
@@ -24,7 +24,7 @@ class App(tk.Tk):
         tk.Tk.__init__(self)
 
         self.title('Multifunction Staistics Tool')
-        self.geometry('650x500')
+        self.geometry('700x600')
 
         # GUI variables
         self.col_options_list = ['Columns'] # this will be the columns from input csv
@@ -47,11 +47,13 @@ class App(tk.Tk):
         self.switch_frame(MainMenuPage)
 
     def switch_frame(self, frame_class):
-        # Destroys current frame and replaces it with a new one.
         if self._frame is not None:
             self._frame.destroy()
         
         self.datafiles.clear()
+        
+        # place holder to export processed data
+        self.datafiles['analysis'] = {'path': '', 'dataframe': ''}
 
         new_frame = frame_class(self)
         
@@ -61,6 +63,7 @@ class App(tk.Tk):
         
         self._frame = new_frame
         self._frame.grid(sticky='nsew')
+        
 
     def select_aim_file(self, parent, data_name):
         try: 
@@ -84,24 +87,28 @@ class App(tk.Tk):
             messagebox.showerror('Warning', 'File is not compatible. \nEnsure the file is in the AiM format.')
 
     def select_file(self, parent, data_name):
-        try: 
-            filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
-                                                                                ('All Files', '*.*')))
-            if filepath == '' or filepath is None:
-                return None
+        filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
+                                                                            ('All Files', '*.*')))
+        if filepath == '' or filepath is None:
+            return None
 
-            df_input = pd.read_csv(filepath, encoding='ISO-8859-1').reset_index(drop=True)
+        df_input = pd.read_csv(filepath, encoding='ISO-8859-1').reset_index(drop=True)
 
-            # this dictionary format allows us to add future information about a data file
-            data_info = {'path': filepath, 'dataframe': df_input}
+        # this dictionary format allows us to add future information about a data file
+        data_info = {'path': filepath, 'dataframe': df_input}
 
-            self.datafiles[data_name] = data_info
-            print(app.datafiles)
+        self.datafiles[data_name] = data_info
+        print(app.datafiles)
 
-            return self.datafiles[data_name]['dataframe']
+        return self.datafiles[data_name]['dataframe']
 
-        except:
-            messagebox.showerror('Warning', 'File is not compatible. \nEnsure the file is in the AiM format.')
+    def create_output_path(self, analysis_name: str, file_extension: str):
+        date = dt.datetime.now()
+        timestamp = date.strftime('%m-%d-%Y_%H-%M-%S')
+        new_path = c.output_folder + analysis_name + '_' + timestamp  + '.' + file_extension
+
+        return new_path
+
 
 class MainMenuPage(tk.Frame):
     def __init__(self, parent):
@@ -142,6 +149,8 @@ class MainMenuPage(tk.Frame):
 class SessionAnalysisPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+
+        self.output_path = ''
         
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -175,66 +184,99 @@ class SessionAnalysisPage(tk.Frame):
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         page_title.config(font=('arial', 14))
 
+        # Header buttons
         main_btn = MainMenuButton(header_frame)
+        export_btn = ExportButton(self, header_frame)
 
         # Treeviews
         tree1 = TreeViewWidget(treeview1_frame)
         tree2 = TreeViewWidget(treeview2_frame)
 
         ## Main Buttons
-        # button1 = tk.Button(button_frame, text='Data File', command=lambda: TreeViewWidget.display_csv(tree1, app.select_aim_file(self, 'data1')))
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: self.ask_for_data_file(tree1, 'data1', filepath_label1))
+        # button1 = tk.Button(button_frame, text='Data File', command=lambda: TreeViewWidget.display_csv(tree1, app.select_aim_file(self, 'aimdata1')))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: self.ask_for_data_file(tree1, 'aimdata1', self.inputpath1_label))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
-        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [filepath_label1]))
+        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [self.inputpath1_label]))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
         # button3 = Button(button_frame, text='Process Data', command=lambda: session_analysis(df_data, var_col_choice))
-        button3 = tk.Button(button_frame, text='Process Data', command=lambda: TreeViewWidget.display_csv(
-            tree2,
-            f.basic_stats(app.datafiles['data1']['dataframe'], app.var_col_choice.get(), app.normalize_stationary_bool.get(), app.rmv_stationary_bool.get())
-            ))
+        button3 = tk.Button(button_frame, text='Process Data', command=lambda: self.process_session_analysis(tree2, 'aimdata1'))
         button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
 
         # **export_button = tk.Button(tree2_data, text='Export Data', command=lambda: export_df_to_csv(df_sector_analysis, c.sector_analysis_path))
         # export_button.pack(anchor='se', side='bottom')
 
-        ## Options
-        # col_options_list; this list variable could update when a file is inputed and filled in with available columns
-        optionmenu_var_col = tk.OptionMenu(button_frame, app.var_col_choice, *app.col_options_list, command=lambda x: print(f'OptionMenu: {x}'))
-        optionmenu_var_col.place(y=70, relx=.75, anchor=tk.CENTER)
 
-        checkbox_normalize = tk.Checkbutton(button_frame, text='Normalize stationary Values (description)', 
+        # Options
+        # These are self variables since we need to modify their attributes later on
+        self.optionmenu_var_col = tk.OptionMenu(button_frame, app.var_col_choice, *app.col_options_list, command=lambda x: print(f'OptionMenu: {x}'))
+        self.optionmenu_var_col.place(y=70, relx=.75, anchor=tk.CENTER)
+
+        self.checkbox_normalize = tk.Checkbutton(button_frame, text='Normalize stationary Values (description)', 
                                 variable=app.normalize_stationary_bool, onvalue=1, offvalue=0, justify=tk.LEFT)
-        checkbox_normalize.place(y=122, relx=.5, anchor=tk.CENTER)
+        self.checkbox_normalize.place(y=122, relx=.5, anchor=tk.CENTER)
 
-        checkbox_rmv_stationary = tk.Checkbutton(button_frame, text='Remove stationary values (description)    ', 
+        self.checkbox_rmv_stationary = tk.Checkbutton(button_frame, text='Remove stationary values (description)    ', 
                                 variable=app.rmv_stationary_bool, onvalue=1, offvalue=0, justify=tk.LEFT)
-        checkbox_rmv_stationary.place(y=142, relx=.5, anchor=tk.CENTER)
+        self.checkbox_rmv_stationary.place(y=142, relx=.5, anchor=tk.CENTER)
+
 
         ## Statistics
-        filepath_label1 = tk.Label(info_frame, text='File 1: ', wraplength=450, justify=tk.LEFT)
-        filepath_label1.place(y=10, x=10)
+        self.inputpath1_label = tk.Label(info_frame, 
+            text='File 1: ',
+            wraplength=450,
+            justify=tk.LEFT)
+        self.inputpath1_label.place(y=10, x=10)
 
-        stat1_label = tk.Label(info_frame, text='', wraplength=350, justify=tk.LEFT)
-        stat1_label.place(y=75, x=10)
+        self.output_label = tk.Label(info_frame, 
+            text='Output: ',
+            wraplength=450,
+            justify=tk.LEFT)
+        self.output_label.place(y=45, x=10)
 
-        stat2_label = tk.Label(info_frame, text='''
-                                        Mandatory columns:\n
-                                        Time, Distance
-                                        '''
-                                        , wraplength=350, justify=tk.LEFT)
-        stat2_label.place(y=95, x=10)
+        info1_label = tk.Label(info_frame, 
+            text='Mandatory columns:\nTime, Distance',
+            wraplength=350,
+            justify=tk.LEFT)
+        info1_label.place(y=95, x=10)
 
-        stat3_label = tk.Label(info_frame, text='Time, Distance', wraplength=350, justify=tk.LEFT)
-        stat3_label.place(y=115, x=10)
+        # stat3_label = tk.Label(info_frame, text='Time, Distance', wraplength=350, justify=tk.LEFT)
+        # stat3_label.place(y=115, x=10)
 
     def ask_for_data_file(self, tree, data_name, label):
-        TreeViewWidget.display_csv(tree, app.select_aim_file(self, data_name))
-        
-        leading_label = label['text'].split(':')[0] + ':'
-        label['text'] = f'{leading_label} {app.datafiles[data_name]["path"]}'
+        try:
+            TreeViewWidget.display_csv(tree, app.select_aim_file(self, data_name))
+        except:
+            return None
 
+        filepath = app.datafiles[data_name]['path']
+        df = app.datafiles[data_name]['dataframe']
+
+        leading_label = label['text'].split(':')[0] + ':'
+        label['text'] = f'{leading_label} {filepath}'
+
+        self.optionmenu_var_col['menu'].delete(0, 'end')
+
+        # Insert list of new options (tk._setit hooks them up to var)
+        new_cols = df.columns
+        for col in new_cols:
+            self.optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(app.var_col_choice, col))
+
+        app.var_col_choice.set(new_cols[-1])
+
+    def process_session_analysis(self, tree, data_name):
+        df_processed = f.basic_stats(
+                        app.datafiles[data_name]['dataframe'], 
+                        app.var_col_choice.get(), 
+                        app.normalize_stationary_bool.get(), 
+                        app.rmv_stationary_bool.get()
+                        )
+        clear_treeview([tree], [])
+        TreeViewWidget.display_csv(tree, df_processed)
+
+        filepath = app.create_output_path('session_analysis', 'csv')
+        app.datafiles['analysis'] = {'path': filepath, 'dataframe': df_processed}
 
 class SectorAnalysisPage(tk.Frame):
     def __init__(self, parent):
@@ -283,7 +325,7 @@ class SectorAnalysisPage(tk.Frame):
         tree3 = TreeViewWidget(treeview3_frame)
         
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: TreeViewWidget.display_csv(tree1, app.select_aim_file(self, 'data1')))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: TreeViewWidget.display_csv(tree1, app.select_aim_file(self, 'aimdata1')))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
         button2 = tk.Button(button_frame, text='Sectors File', command=lambda: TreeViewWidget.display_csv(tree2, app.select_file(self, 'sectors')))
@@ -294,7 +336,7 @@ class SectorAnalysisPage(tk.Frame):
         # **
         button4 = tk.Button(button_frame, text='Process Data', command=lambda: output_sector_analysis(
             tree3,
-            sa.init_sector_analysis(app.datafiles['data1']['dataframe'], app.datafiles['sectors']['dataframe'], app.var_col_choice.get(), app.normalize_stationary_bool.get(),app. rmv_stationary_bool.get()),)
+            sa.init_sector_analysis(app.datafiles['aimdata1']['dataframe'], app.datafiles['sectors']['dataframe'], app.var_col_choice.get(), app.normalize_stationary_bool.get(),app. rmv_stationary_bool.get()),)
             )
         button4.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
         
@@ -484,9 +526,30 @@ class OilAnalysisPage(tk.Frame):
 
 
 class MainMenuButton():
-    def __init__(self, parent):
-        main_menu_btn = tk.Button(parent, text='Main Menu', command=lambda: app.switch_frame(MainMenuPage))
+    def __init__(self, frame):
+        main_menu_btn = tk.Button(frame, text='Main Menu', command=lambda: app.switch_frame(MainMenuPage))
         main_menu_btn.place(x=0, y=0)
+
+
+class ExportButton():
+    def __init__(self, parent, frame):
+        self.parent = parent
+
+        export_button = tk.Button(frame, text='Export Data', command=lambda: self.export_df_to_csv())
+        export_button.pack(anchor='ne', side='bottom')
+
+    def export_df_to_csv(self):
+        df = app.datafiles['analysis']['dataframe']
+        path = app.datafiles['analysis']['path']
+        
+        if isinstance(df, pd.DataFrame):
+            print(path)
+            df.to_csv(path, index=False)
+        
+        self.update_output_label(path)
+
+    def update_output_label(self, path):
+        self.parent.output_label['text'] = f'Output: {path}'
 
 class TreeViewWidget(ttk.Treeview):
     def __init__(self, parent):
