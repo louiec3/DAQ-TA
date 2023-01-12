@@ -536,7 +536,7 @@ class ExportButton():
         self.parent = parent
 
         export_button = tk.Button(frame, text='Export Data', command=lambda: self.export_df_to_csv())
-        export_button.pack(anchor='ne', side='bottom')
+        export_button.pack(anchor='ne', side='top')
 
     def export_df_to_csv(self):
         df = app.datafiles['analysis']['dataframe']
