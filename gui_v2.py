@@ -64,27 +64,28 @@ class App(tk.Tk):
         self._frame = new_frame
         self._frame.grid(sticky='nsew')
         
-
     def select_aim_file(self, data_name: str):
-        try: 
-            filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
-                                                                                ('All Files', '*.*')))
-            if filepath == '' or filepath is None:
-                return None
+        filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
+                                                                            ('All Files', '*.*')))
+        if filepath == '' or filepath is None:
+            return None
 
-            df_input = pd.read_fwf(filepath, header=None, encoding='ISO-8859-1').reset_index(drop=True)
+        df_input = pd.read_fwf(filepath, header=None, encoding='ISO-8859-1').reset_index(drop=True)
+        
+        try: 
             df_formatted_data = f.format_data(df_input)
 
             # this dictionary format allows us to add future information about a data file
             data_info = {'path': filepath, 'dataframe': df_formatted_data}
 
             self.datafiles[data_name] = data_info
-            print(app.datafiles)
+            # print(app.datafiles)
 
             return self.datafiles[data_name]['dataframe']
 
-        except:
-            messagebox.showerror('Warning', 'File is not compatible. \nEnsure the file is in the AiM format.')
+        except Exception as e:
+            print(e)
+            messagebox.showerror('Warning', f'Error: {e}\n\nFile is not compatible. \nEnsure the file is in the AiM format.')
 
     def select_file(self, data_name: str):
         filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
@@ -98,7 +99,7 @@ class App(tk.Tk):
         data_info = {'path': filepath, 'dataframe': df_input}
 
         self.datafiles[data_name] = data_info
-        print(self.datafiles)
+        # print(self.datafiles)
 
         return self.datafiles[data_name]['dataframe']
 
@@ -129,7 +130,6 @@ class App(tk.Tk):
 
             app.var_col_choice.set(new_cols[-1])
 
-
     def create_output_path(self, analysis_name: str, file_extension: str):
         date = dt.datetime.now()
         timestamp = date.strftime('%m-%d-%Y_%H-%M-%S')
@@ -142,7 +142,6 @@ class App(tk.Tk):
         graph_window.wm_title(window_name)
         
         return graph_window
-
 
 class MainMenuPage(tk.Frame):
     def __init__(self, parent):
@@ -238,7 +237,7 @@ class SessionAnalysisPage(tk.Frame):
 
         # Options
         # These are self variables since we need to modify their attributes later on
-        self.optionmenu_var_col = tk.OptionMenu(button_frame, app.var_col_choice, *app.col_options_list, command=lambda x: print(f'OptionMenu: {x}'))
+        self.optionmenu_var_col = tk.OptionMenu(button_frame, app.var_col_choice, *app.col_options_list, command=lambda x: print(f'Column selected: {x}'))
         self.optionmenu_var_col.place(y=70, relx=.75, anchor=tk.CENTER)
 
         self.checkbox_normalize = tk.Checkbutton(button_frame, text='Normalize stationary Values (description)', 
@@ -284,8 +283,11 @@ class SessionAnalysisPage(tk.Frame):
 
             filepath = app.create_output_path('session_analysis', 'csv')
             app.datafiles['analysis'] = {'path': filepath, 'dataframe': df_processed}
-        except KeyError:
-            print('No data selected.')
+        except KeyError as e:
+            if str(e) == 'aimdata1':
+                print('No data selected.')
+        except:
+            raise
 
 class SectorAnalysisPage(tk.Frame):
     def __init__(self, parent):
@@ -348,7 +350,7 @@ class SectorAnalysisPage(tk.Frame):
         button4.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
         
         ## Options
-        self.optionmenu_var_col = tk.OptionMenu(button_frame, app.var_col_choice, *app.col_options_list, command=lambda x: print(f'OptionMenu: {x}'))
+        self.optionmenu_var_col = tk.OptionMenu(button_frame, app.var_col_choice, *app.col_options_list, command=lambda x: print(f'Column selected: {x}'))
         self.optionmenu_var_col.place(y=110, relx=.25, anchor=tk.CENTER)
 
         self.checkbox_normalize = tk.Checkbutton(button_frame, text='Normalize stationary\nvalues (description)', 
@@ -527,23 +529,24 @@ class OilAnalysisPage(tk.Frame):
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         page_title.config(font=('arial', 14))
         
-        main_btm = MainMenuButton(header_frame)
+        main_btm = MainMenuButton(self, header_frame)
 
         ## Treeviews
         tree1 = TreeViewWidget(treeview1_frame)
         tree2 = TreeViewWidget(treeview2_frame)
         
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Oil File 1', command=lambda: select_datafile1(tree1, filepath_label1))
+        button1 = tk.Button(button_frame, text='Oil File 1', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True, update_col_options_bool=False))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
-        button2 = tk.Button(button_frame, text='Oil File 2', command=lambda: select_datafile2(tree2, filepath_label2))
+        button2 = tk.Button(button_frame, text='Oil File 2', command=lambda: app.ask_for_data_file(self, tree2, 'aimdata2', self.inputpath2_label, aim_data_bool=True, update_col_options_bool=False))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
-        button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [filepath_label1, filepath_label2]))
+        button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [self.inputpath1_label, self.inputpath2_label]))
         button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
 
-        button4 = tk.Button(button_frame, text='Process Data', command=lambda: init_oil_analysis([df_data1, df_data2], int(app.spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
+        # button4 = tk.Button(button_frame, text='Process Data', command=lambda: init_oil_analysis([df_data1, df_data2], int(app.spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
+        button4 = tk.Button(button_frame, text='Process Data', command=lambda: self.process_oil_analysis(app.datafiles['aimdata1']['dataframe'], app.datafiles['aimdata2']['dataframe'])) # ** displays all graphs at once.
         button4.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
 
         spinbox1 = tk.Spinbox(button_frame, from_=0, to=99, textvariable=app.spinbox_max_temp_diff_from_avg)
@@ -552,11 +555,11 @@ class OilAnalysisPage(tk.Frame):
         spinbox1_label.place(relx=.25, y=110, anchor=tk.CENTER)
 
         ## Statistics
-        filepath_label1 = tk.Label(info_frame, text='File 1: ', wraplength=450, justify=tk.LEFT)
-        filepath_label1.place(y=10, x=10)
+        self.inputpath1_label = tk.Label(info_frame, text='File 1: ', wraplength=450, justify=tk.LEFT)
+        self.inputpath1_label.place(y=10, x=10)
 
-        filepath_label2 = tk.Label(info_frame, text='File 2: ', wraplength=450, justify=tk.LEFT)
-        filepath_label2.place(y=55, x=10)
+        self.inputpath2_label = tk.Label(info_frame, text='File 2: ', wraplength=450, justify=tk.LEFT)
+        self.inputpath2_label.place(y=55, x=10)
 
         stat1_label = tk.Label(info_frame, text=' ', wraplength=350, justify=tk.LEFT)
         stat1_label.place(y=75, x=10)
@@ -567,6 +570,15 @@ class OilAnalysisPage(tk.Frame):
         stat3_label = tk.Label(info_frame, text='Time, Distance, S8_RPM, S*eot, S8_ect1, S8_eop', wraplength=350, justify=tk.LEFT)
         stat3_label.place(y=115, x=10)
 
+    def process_oil_analysis(self, df1, df2):
+        try:
+            print(f'Max temp diff: {app.spinbox_max_temp_diff_from_avg.get()}')
+            oa.init_oil_analysis([df1, df2], int(app.spinbox_max_temp_diff_from_avg.get()))
+        except ValueError as e:
+            if str(e) == 'No objects to concatenate':
+                print('Max temperature difference is too low. Raise the value and try again.')
+        except:
+            raise
 
 class MainMenuButton():
     def __init__(self, parent, frame):
@@ -586,7 +598,6 @@ class MainMenuButton():
         # Used in limp_mode_page
         app.spinbox_max_temp_diff_from_avg = tk.IntVar(value=c.MAX_TEMP_DIFF_FROM_AVG)
 
-
 class ExportButton():
     def __init__(self, parent, frame):
         self.parent = parent
@@ -602,10 +613,10 @@ class ExportButton():
             print(path)
             df.to_csv(path, index=False)
         
-        self.update_output_label(path)
+        self.update_outputpath_label(path)
 
-    def update_output_label(self, path):
-        self.parent.output_label['text'] = f'Output: {path}'
+    def update_outputpath_label(self, path):
+        self.parent.outputpath_label['text'] = f'Output: {path}'
 
 class TreeViewWidget(ttk.Treeview):
     def __init__(self, parent):
@@ -618,7 +629,6 @@ class TreeViewWidget(ttk.Treeview):
         
         treescrollx.pack(side='bottom', fill='x')
         treescrolly.pack(side='right', fill='y')
-
 
     def display_csv(self, df):
         ## Code to display dataframe in tree-view
@@ -650,7 +660,6 @@ def clear_treeview(trees, lables: list):
     else:
         for label in lables:
             label['text'] = label['text'].split(':')[0] + ':'
-
 
 if __name__ == '__main__':
     app = App()
