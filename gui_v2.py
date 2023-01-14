@@ -102,7 +102,7 @@ class App(tk.Tk):
 
         return self.datafiles[data_name]['dataframe']
 
-    def ask_for_data_file(self, parent: object, tree: object, data_name: str, label: str, aim_data_bool: bool):
+    def ask_for_data_file(self, parent: object, tree: object, data_name: str, label: str, aim_data_bool: bool, update_col_options_bool: bool):
         if aim_data_bool:    
             try:
                 TreeViewWidget.display_csv(tree, app.select_aim_file(data_name))
@@ -120,11 +120,9 @@ class App(tk.Tk):
         leading_label = label['text'].split(':')[0] + ':'
         label['text'] = f'{leading_label} {filepath}'
 
-        parent.optionmenu_var_col['menu'].delete(0, 'end')
-
-
         # Insert list of new options (tk._setit hooks them up to var)
-        if aim_data_bool:
+        if update_col_options_bool:
+            parent.optionmenu_var_col['menu'].delete(0, 'end')
             new_cols = df.columns
             for col in new_cols:
                 parent.optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(app.var_col_choice, col))
@@ -138,6 +136,12 @@ class App(tk.Tk):
         new_path = c.output_folder + analysis_name + '_' + timestamp  + '.' + file_extension
 
         return new_path
+
+    def create_window(self, window_name):
+        graph_window = tk.Toplevel(self)
+        graph_window.wm_title(window_name)
+        
+        return graph_window
 
 
 class MainMenuPage(tk.Frame):
@@ -223,14 +227,12 @@ class SessionAnalysisPage(tk.Frame):
         tree2 = TreeViewWidget(treeview2_frame)
 
         ## Main Buttons
-        # button1 = tk.Button(button_frame, text='Data File', command=lambda: TreeViewWidget.display_csv(tree1, app.select_aim_file(self, 'aimdata1')))
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True, update_col_options_bool=True))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
         button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [self.inputpath1_label, self.outputpath_label]))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
-        # button3 = Button(button_frame, text='Process Data', command=lambda: session_analysis(df_data, var_col_choice))
         button3 = tk.Button(button_frame, text='Process Data', command=lambda: self.process_session_analysis(tree2, 'aimdata1'))
         button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
 
@@ -270,17 +272,20 @@ class SessionAnalysisPage(tk.Frame):
         info1_label.place(y=95, x=10)
 
     def process_session_analysis(self, tree, data_name):
-        df_processed = f.basic_stats(
-                        app.datafiles[data_name]['dataframe'], 
-                        app.var_col_choice.get(), 
-                        app.normalize_stationary_bool.get(), 
-                        app.rmv_stationary_bool.get()
-                        )
-        clear_treeview([tree], [])
-        TreeViewWidget.display_csv(tree, df_processed)
+        try:
+            df_processed = f.basic_stats(
+                            app.datafiles[data_name]['dataframe'], 
+                            app.var_col_choice.get(), 
+                            app.normalize_stationary_bool.get(), 
+                            app.rmv_stationary_bool.get()
+                            )
+            clear_treeview([tree], [])
+            TreeViewWidget.display_csv(tree, df_processed)
 
-        filepath = app.create_output_path('session_analysis', 'csv')
-        app.datafiles['analysis'] = {'path': filepath, 'dataframe': df_processed}
+            filepath = app.create_output_path('session_analysis', 'csv')
+            app.datafiles['analysis'] = {'path': filepath, 'dataframe': df_processed}
+        except KeyError:
+            print('No data selected.')
 
 class SectorAnalysisPage(tk.Frame):
     def __init__(self, parent):
@@ -330,11 +335,10 @@ class SectorAnalysisPage(tk.Frame):
         tree3 = TreeViewWidget(treeview3_frame)
         
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True, update_col_options_bool=True))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
-        # button2 = tk.Button(button_frame, text='Sectors File', command=lambda: TreeViewWidget.display_csv(tree2, app.select_file(self, 'sectors')))
-        button2 = tk.Button(button_frame, text='Sectors File', command=lambda: app.ask_for_data_file(self, tree2, 'sectors', self.inputpath2_label, aim_data_bool=False))
+        button2 = tk.Button(button_frame, text='Sectors File', command=lambda: app.ask_for_data_file(self, tree2, 'sectors', self.inputpath2_label, aim_data_bool=False, update_col_options_bool=False))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
         button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2, tree3], [self.inputpath1_label, self.inputpath2_label, self.outputpath_label]))
@@ -379,34 +383,28 @@ class SectorAnalysisPage(tk.Frame):
         stat2_label = tk.Label(info_frame, text='Mandatory columns: Time, Distance', wraplength=350, justify=tk.LEFT)
         stat2_label.place(y=1055, x=10)
 
-        # stat3_label = tk.Label(info_frame, text='Time, Distance ', wraplength=350, justify=tk.LEFT)
-        # stat3_label.place(y=115, x=10)
-        
-        # stat4_label = Label(info_frame, text='Text ', wraplength=350, justify=LEFT)
-        # stat4_label.place(y=135, x=10)
-
     def process_sector_analysis(self, treeview):
         # helper function to get dataframe from session_analysis and display to GUI
-        print('Sector Analysis')
-        print(app.datafiles)
-        df_analysis = sa.init_sector_analysis(
-                            app.datafiles['aimdata1']['dataframe'], 
-                            app.datafiles['sectors']['dataframe'], 
-                            app.var_col_choice.get(), 
-                            app.normalize_stationary_bool.get(),
-                            app.rmv_stationary_bool.get()
-                            )
-        
-        filepath = app.create_output_path('session_analysis', 'csv')
-        app.datafiles['analysis'] = {'path': filepath, 'dataframe': df_analysis}
-        
-        df_analysis['Stats'] = c.SECTOR_STATS_LABELS
+        try:
+            df_analysis = sa.init_sector_analysis(
+                                app.datafiles['aimdata1']['dataframe'], 
+                                app.datafiles['sectors']['dataframe'], 
+                                app.var_col_choice.get(), 
+                                app.normalize_stationary_bool.get(),
+                                app.rmv_stationary_bool.get()
+                                )
+            
+            filepath = app.create_output_path('session_analysis', 'csv')
+            app.datafiles['analysis'] = {'path': filepath, 'dataframe': df_analysis}
+            
+            df_analysis['Stats'] = c.SECTOR_STATS_LABELS
 
-        first_column = df_analysis.pop('Stats')
-        df_analysis.insert(0, 'Stats', first_column)
+            first_column = df_analysis.pop('Stats')
+            df_analysis.insert(0, 'Stats', first_column)
 
-        TreeViewWidget.display_csv(treeview, df_analysis)
-
+            TreeViewWidget.display_csv(treeview, df_analysis)
+        except KeyError:
+            print('No data selected.')
 
 class CoastdownPage(tk.Frame):
     def __init__(self, parent):
@@ -445,26 +443,28 @@ class CoastdownPage(tk.Frame):
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         page_title.config(font=('arial', 14))
         
-        main_btn = MainMenuButton(header_frame)
+        main_btn = MainMenuButton(self, header_frame)
 
         ## Treeview 1 widget   
         tree1 = TreeViewWidget(treeview1_frame)
 
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
+        # button1 = tk.Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
+        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True, update_col_options_bool=False))
         button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
 
-        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1_data], [filepath_label1]))
+        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1], [self.inputpath1_label]))
         button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
 
-        button3 = tk.Button(button_frame, text='Process Data', command=lambda: popup_graph(
-            init_downforce_analysis(df_data1),
-            create_window('Downforce vs Speed')))
+        # button3 = tk.Button(button_frame, text='Process Data', command=lambda: self.popup_graph(
+        #     da.init_downforce_analysis(df_data1),
+        #     create_window('Downforce vs Speed')))
+        button3 = tk.Button(button_frame, text='Process Data', command=lambda: self.process_coastdown_analysis(app.datafiles['aimdata1']['dataframe']))
         button3.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
         
         ## Statistics
-        filepath_label1 = tk.Label(info_frame, text='File 1: ', wraplength=450, justify=tk.LEFT)
-        filepath_label1.place(y=10, x=10)
+        self.inputpath1_label = tk.Label(info_frame, text='File 1: ', wraplength=450, justify=tk.LEFT)
+        self.inputpath1_label.place(y=10, x=10)
 
         stat1_label = tk.Label(info_frame, text=' ', wraplength=350, justify=tk.LEFT)
         stat1_label.place(y=75, x=10)
@@ -475,6 +475,14 @@ class CoastdownPage(tk.Frame):
         stat3_label = tk.Label(info_frame, text='Time, Distance, YawRate, Front_Left_Forc, Front_Right_Forc, Rear_Right_Force, Rear_Left_Force, S8_tps1, F_Brake_Press, R_Brake_Pres, GPS_Speed',
             wraplength=350, justify=tk.LEFT)
         stat3_label.place(y=115, x=10)
+
+    def process_coastdown_analysis(self, df):
+        try:
+            fig = da.init_downforce_analysis(df)
+            print(fig)
+            fig.show()
+        except KeyError:
+            print('No data selected.')
 
 class OilAnalysisPage(tk.Frame):
     def __init__(self, parent):
@@ -627,18 +635,6 @@ class TreeViewWidget(ttk.Treeview):
         for column in list_headers:
             self.column(column, width=10, stretch=tk.YES)
 
-    # def clear_treeview(self, trees, lables: list):
-    #     # print(type(trees))
-    #     for treeview in trees:
-    #         treeview.delete(*treeview.get_children())
-    #     treeview['columns'] = [None]
-        
-    #     if lables is None:
-    #         return None
-    #     else:
-    #         for label in lables:
-    #             label['text'] = label['text'].split(':')[0] + ':'
-
 class StatisticsFrame():
     def __init__(self, parent):
         pass
@@ -654,19 +650,6 @@ def clear_treeview(trees, lables: list):
     else:
         for label in lables:
             label['text'] = label['text'].split(':')[0] + ':'
-
-# def output_sector_analysis(treeview, df):
-#     # helper function to get dataframe from session_analysis and display to GUI
-
-
-#     df['Stats'] = c.SECTOR_STATS_LABELS
-
-#     first_column = df.pop('Stats')
-#     df.insert(0, 'Stats', first_column)
-
-#     TreeViewWidget.display_csv(treeview, df)
-
-#     return df
 
 
 if __name__ == '__main__':
