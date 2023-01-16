@@ -86,7 +86,7 @@ def limp_mode_graph(df, x_col, y_col, plot_type, marker, session_name, color):
     plt.legend(loc='best')
 
     return None
-    
+
 
 def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
     df_sessions_list = []
@@ -134,6 +134,7 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
     k = 0
     for df_session in df_sessions_list:
         limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker=None, session_name=c.GRAPH_LABELS_LIST[k], color=c.COLORS_LIST[k])
+        
         k+=1
     
     
@@ -152,18 +153,13 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
     plt.figure('RPM vs. Oil Pressure')
     for df_session in df_sessions_list:
         limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', session_name=c.GRAPH_LABELS_LIST[k], color=c.COLORS_LIST[k])
-        # ** Lap numbers do not display correctly because of the single_plot_t_f=False Flag
-        # Need reword of graphing function
         plt.xticks(np.arange(custom_round(min_rpm, 1000), custom_round(max_rpm, 1000), 500))
+        
         k+=1
     
     # Loop sessions to group rpm values by average oil pressure
     sessions_groupby_rpm_list = []
-    k = -1
     for df_session in df_sessions_list:
-        k+=1
-        # session_name = os.path.basename(csv_files[k])
-
         df_rpm_groupby = df_session.groupby(c.RPM_COL, group_keys=False)[c.OIL_PRESS_COL].mean().reset_index(name=c.OIL_PRESS_COL)
         sessions_groupby_rpm_list.append(df_rpm_groupby)
     
@@ -172,7 +168,8 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
     df_pct_change['% Change'] = ((df_pct_change[f'{c.OIL_PRESS_COL}_y'] - df_pct_change[f'{c.OIL_PRESS_COL}_x']) / df_pct_change[f'{c.OIL_PRESS_COL}_x']) * 100
 
     print(df_pct_change)
-
+    
+    # Graph df_pct_change. No loop needed.
     plt.figure('RPM % Change')
     limp_mode_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker=None, session_name=c.GRAPH_LABELS_LIST[0], color=c.COLORS_LIST[0])
     limp_mode_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker=None, session_name=c.GRAPH_LABELS_LIST[1], color=c.COLORS_LIST[1])

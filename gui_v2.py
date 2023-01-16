@@ -1,9 +1,12 @@
-# Refer to this post to understand the foundation of the code.
+# Refer to this post to understand the foundation of the GUI code (object oriented programming with tkinter).
 # This will explain the purpose of the App class and the child Page classes.
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
 
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+
+import customtkinter as ctk
+
 # https://github.com/TomSchimansky/CustomTkinter/wiki/Packaging
 # Look into https://nuitka.net/ for packaging
 
@@ -17,26 +20,28 @@ import functions as f
 import sector_analysis as sa
 import downforce_analysis as da
 import oil_analysis as oa
-# from functions import format_data
 
-class App(tk.Tk):
+class App(ctk.CTk):
     def __init__(self):
-        tk.Tk.__init__(self)
+        ctk.CTk.__init__(self)
+
+        ctk.set_appearance_mode('system')
+        self.iconbitmap("logo.ico")
 
         self.title('Multifunction Staistics Tool')
         self.geometry('700x600')
 
         # GUI variables
         self.col_options_list = ['Columns'] # this will be the columns from input csv
-        self.var_col_choice = tk.StringVar()
+        self.var_col_choice = ctk.StringVar()
         self.var_col_choice.set(self.col_options_list[0])
 
         # Used in session_analysis_page and sector_analysis_page
-        self.normalize_stationary_bool = tk.BooleanVar(value=False)
-        self.rmv_stationary_bool = tk.BooleanVar(value=False)
+        self.normalize_stationary_bool = ctk.BooleanVar(value=False)
+        self.rmv_stationary_bool = ctk.BooleanVar(value=False)
 
         # Used in limp_mode_page
-        self.spinbox_max_temp_diff_from_avg = tk.IntVar(value=c.MAX_TEMP_DIFF_FROM_AVG)
+        self.spinbox_max_temp_diff_from_avg = ctk.IntVar(value=c.MAX_TEMP_DIFF_FROM_AVG)
 
         # Dataframe dictionary
         # Stores temporary data files when a user input is required.
@@ -90,6 +95,7 @@ class App(tk.Tk):
     def select_file(self, data_name: str):
         filepath = filedialog.askopenfilename(title='Select a File', filetype=(('CSV Files', '*.csv *.xlsx *.xls *.xlsb *.xlsm'),
                                                                             ('All Files', '*.*')))
+
         if filepath == '' or filepath is None:
             return None
 
@@ -138,19 +144,21 @@ class App(tk.Tk):
         return new_path
 
     def create_window(self, window_name):
-        graph_window = tk.Toplevel(self)
+        graph_window = ctk.CTkToplevel(self)
         graph_window.wm_title(window_name)
         
         return graph_window
 
-class MainMenuPage(tk.Frame):
+class MainMenuPage(ctk.CTkFrame):
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        # tk.Frame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent)
         
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        container = tk.LabelFrame(self, text='Page: Main Menu', relief='ridge')
+        # container = tk.LabelFrame(self, text='Page: Main Menu', relief='ridge')
+        container = ctk.CTkFrame(self)
         container.grid(row=0, column=0, sticky='nsew')
         
         container.grid_rowconfigure(0, weight=1)
@@ -164,19 +172,19 @@ class MainMenuPage(tk.Frame):
 
         # Page Widgets (temporary)
         for i in range(3):
-            label = tk.Label(container, text=f'Test {i}')
+            label = ctk.CTkLabel(container, text=f'Test {i}')
             label.grid(row=i, column=i, sticky='nsew')
         
-        btn1 = tk.Button(container, text='Session Analysis', command=lambda: parent.switch_frame(SessionAnalysisPage))
+        btn1 = ctk.CTkButton(container, text='Session Analysis', command=lambda: parent.switch_frame(SessionAnalysisPage))
         btn1.grid(row=0, column=0, sticky='nsew')
 
-        btn2 = tk.Button(container, text='Sector Analysis', command=lambda: parent.switch_frame(SectorAnalysisPage))
+        btn2 = ctk.CTkButton(container, text='Sector Analysis', command=lambda: parent.switch_frame(SectorAnalysisPage))
         btn2.grid(row=1, column=0, sticky='nsew')
         
-        btn3 = tk.Button(container, text='Coastdown Analysis', command=lambda: parent.switch_frame(CoastdownPage))
+        btn3 = ctk.CTkButton(container, text='Coastdown Analysis', command=lambda: parent.switch_frame(CoastdownPage))
         btn3.grid(row=2, column=0, sticky='nsew')
         
-        btn4 = tk.Button(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
+        btn4 = ctk.CTkButton(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
         btn4.grid(row=2, column=1, sticky='nsew')
 
 class SessionAnalysisPage(tk.Frame):
@@ -213,7 +221,7 @@ class SessionAnalysisPage(tk.Frame):
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=1, sticky='nsew', padx=2, pady=2)
 
-        page_title = tk.Label(header_frame, text='UConn FSAE DAQ Multitool')
+        page_title = tk.Label(header_frame, text='DAQ TA: Session Analysis')
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         page_title.config(font=('arial', 14))
 
@@ -324,7 +332,7 @@ class SectorAnalysisPage(tk.Frame):
         info_frame.grid(row=3, column=2, columnspan=2, sticky='nsew', padx=2, pady=2)
         
         # Widgets
-        page_title = tk.Label(header_frame, text='UConn FSAE DAQ Multitool')
+        page_title = tk.Label(header_frame, text='DAQ TA: Sector Analysis')
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         page_title.config(font=('arial', 14))
         
@@ -441,7 +449,7 @@ class CoastdownPage(tk.Frame):
         info_frame.grid(row=3, column=1, columnspan=2, sticky='nsew', padx=2, pady=2)
         
         # Widgets
-        page_title = tk.Label(header_frame, text='UConn FSAE DAQ Multitool')
+        page_title = tk.Label(header_frame, text='DAQ TA: Coastdown Analysis')
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         page_title.config(font=('arial', 14))
         
@@ -485,6 +493,8 @@ class CoastdownPage(tk.Frame):
             fig.show()
         except KeyError:
             print('No data selected.')
+        except:
+            raise
 
 class OilAnalysisPage(tk.Frame):
     def __init__(self, parent):
@@ -525,7 +535,7 @@ class OilAnalysisPage(tk.Frame):
         info_frame.grid(row=3, column=1, columnspan=1, sticky='nsew', padx=2, pady=2)
         
         # Widgets
-        page_title = tk.Label(header_frame, text='UConn FSAE DAQ Multitool')
+        page_title = tk.Label(header_frame, text='DAQ TA: Oil Analysis')
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         page_title.config(font=('arial', 14))
         
@@ -585,8 +595,7 @@ class MainMenuButton():
         main_menu_btn = tk.Button(frame, text='Main Menu', command=lambda: app.switch_frame(MainMenuPage))
         main_menu_btn.place(x=0, y=0)
 
-        # Reset variables
-        # GUI variables
+        # Reset App() variables
         app.col_options_list = ['Columns'] # this will be the columns from input csv
         app.var_col_choice = tk.StringVar()
         app.var_col_choice.set(app.col_options_list[0])
