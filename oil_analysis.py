@@ -58,16 +58,13 @@ def hottest_avg_temp(df, temperature_col):
     return avg_temp
 
 
-def limp_mode_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f, lap_num, color):
-    if single_plot_t_f is True:
-        fig = plt.figure()
+def limp_mode_graph(df, x_col, y_col, plot_type, marker, session_name, color):
     plt.style.use('ggplot')
     plot_styles_dict = {
         'color': color,
         'marker': marker
     }
     title = f'{y_col} vs {x_col}'
-    # print(df[[x_col, y_col]])
     df_plot = df[[x_col, y_col]]
     
     # df_avg = df_plot # use this to demonstrate variation of rpm and press without average
@@ -83,58 +80,19 @@ def limp_mode_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f, lap_nu
     if plot_type.lower() == 'scatter':
         plt.scatter(x, y, **plot_styles_dict)
     elif plot_type.lower() == 'line':
-        plt.plot(x, y, **plot_styles_dict, label=f'Session: {lap_num}')
+        plt.plot(x, y, **plot_styles_dict, label=f'Session: {session_name}')
     plt.autoscale(enable=True, axis='both', tight=None)
 
-    # test Start
-    plt.legend(loc='lower right')
-    # test End
-
-    try:
-        return fig
-    except:
-        return None
-
-
-## test (this might be used for oil analysis)
-def pct_change_graph(df, x_col, y_col, lap_num, color):
-    plt.style.use('ggplot')
-    plot_styles_dict = {
-        'color': color,
-        'marker': ''
-    }
-    df_plot = df[[x_col, y_col]]
-
-    # df_avg = df_plot # use this to demonstrate variation of rpm and press without average
-    df_avg = df_plot.groupby(x_col, group_keys=False)[y_col].mean().reset_index(name=y_col)
-
-    title = f'{y_col} vs {x_col}'
-    x = df_avg[x_col] 
-    y = df_avg[y_col]
-
-    plt.xlabel(x_col)
-    plt.ylabel(y_col)
-    plt.title(title)
-
-    plt.plot(x, y, **plot_styles_dict, label=f'Lap {lap_num}')
-    plt.legend()
+    plt.legend(loc='best')
 
     return None
-## test
-
+    
 
 def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
-    # ** When creating a GUI, we will only need 2 files, 100% oil and x% oil. There will be two
-    # buttons to select which is which. Using glob will no longer be needed. We can simply assign
-    # csv_files to [file1.csv (100%), file2.csv (x%)]
-
-    # session_names_list = ['100%', 'x%']\
-
     df_sessions_list = []
     for df in df_list:
         df = round_limp_mode(df)
-        
-        df_laps_list = split_laps(df)[1:-2] # **
+        df_laps_list = split_laps(df)[1:-2] # ** automatically remove first and last two laps (total of 3 removed)
         
         # loop laps to remove outliers
         for index, lap in enumerate(df_laps_list):
@@ -150,7 +108,6 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
 
         hottest_lap_avg = max(avg_temps_list)
         
-        # print()
         # print(f'# of Laps: {len(df_laps_list)}')
 
         usable_laps_list = []
@@ -164,7 +121,6 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
             # print(f'Max: {lap[c.COOLANT_TEMP_COL].max()}')
             # print(f'Max diff: {max_temp_diff}')
 
-            # if (min_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG) and (max_temp_diff < c.MAX_TEMP_DIFF_FROM_AVG):
             if (min_temp_diff < max_oil_temp_diff) and (max_temp_diff < max_oil_temp_diff):
                 usable_laps_list.append(lap)
 
@@ -173,13 +129,12 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
         df_sessions_list.append(df_good_laps)
 
     # plt.cla() # Removes previous graphs. Shouldnt be needed when we move to Object Oriented
-    k = -1
-    for df_session in df_sessions_list:
-        k+=1
-        # session_name = os.path.basename(csv_files[k])
-        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'{k+1}', color=c.COLORS_LIST[k])
-        # df_session.to_csv(f'session {k}.csv', index=False)
+    # Loop sessions and plot
     plt.figure('Coolant Temp vs. Time')
+    k = 0
+    for df_session in df_sessions_list:
+        limp_mode_graph(df_session, c.TIME_COL, c.COOLANT_TEMP_COL, plot_type='line', marker=None, session_name=c.GRAPH_LABELS_LIST[k], color=c.COLORS_LIST[k])
+        k+=1
     
     
     # loop sessions to set max and min ticks for graph
@@ -192,16 +147,17 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
     max_rpm = max(max_rpm)
     
 
-    k = -1
+    k = 0
+    # Loop sessions and plot
+    plt.figure('RPM vs. Oil Pressure')
     for df_session in df_sessions_list:
-        k+=1
-        limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'test 11111: {k}', color=c.COLORS_LIST[k])
+        limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', session_name=c.GRAPH_LABELS_LIST[k], color=c.COLORS_LIST[k])
         # ** Lap numbers do not display correctly because of the single_plot_t_f=False Flag
         # Need reword of graphing function
         plt.xticks(np.arange(custom_round(min_rpm, 1000), custom_round(max_rpm, 1000), 500))
-    plt.figure('RPM % Change')
+        k+=1
     
-    
+    # Loop sessions to group rpm values by average oil pressure
     sessions_groupby_rpm_list = []
     k = -1
     for df_session in df_sessions_list:
@@ -217,11 +173,9 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
 
     print(df_pct_change)
 
-    # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[0]), color=c.COLORS_LIST[0])
-    # var1_vs_var2_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=os.path.basename(csv_files[1]), color=c.COLORS_LIST[1])
-    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'{k}', color=c.COLORS_LIST[0])
-    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker='none', single_plot_t_f=False, lap_num=f'{k}', color=c.COLORS_LIST[1])
     plt.figure('RPM % Change')
+    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change Initial', plot_type='line', marker=None, session_name=c.GRAPH_LABELS_LIST[0], color=c.COLORS_LIST[0])
+    limp_mode_graph(df_pct_change, c.RPM_COL, '% Change', plot_type='line', marker=None, session_name=c.GRAPH_LABELS_LIST[1], color=c.COLORS_LIST[1])
 
     plt.show()
 

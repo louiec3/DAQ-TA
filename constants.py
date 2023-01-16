@@ -76,5 +76,6 @@ HI_QUANTILE = 0.99
 
 MAX_TEMP_DIFF_FROM_AVG = 7
 
-# Matplotlib line colors
+# Matplotlib variables (for oil analysis)
 COLORS_LIST = ['red', 'blue', 'green', 'black', 'yellow', 'purple', 'orange', 'slategrey', 'teal', 'lime', 'gold', 'aqua', 'pink', 'fuchsia', 'aquamarine', 'royalblue', 'bisque', 'darkviolet']
+GRAPH_LABELS_LIST = ['100%', 'x%']
