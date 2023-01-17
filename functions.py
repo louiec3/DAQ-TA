@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.backends.backend_pdf
+from scipy.optimize import curve_fit
 
 from os.path import dirname, exists
 import os
@@ -186,19 +187,13 @@ def var1_vs_var2_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f):
         plt.plot(x, y, **plot_styles_dict, label=f'Lap')
     plt.autoscale(enable=True, axis='both', tight=None)
 
-    # test
-    from scipy.optimize import curve_fit
     def func1(x, a, b, c):
         return a*x**2+b*x+c
     params, _ = curve_fit(func1, x, y)
     a, b, c = params[0], params[1], params[2]  
     yfit1 = a*x**2+b*x+c      
     plt.plot(x, yfit1, label=f'y={custom_round(a, .001)}*x^2+{custom_round(b, .001)}*x+{custom_round(c, .001)}')
-    # test
-
-    # test Start
     plt.legend(loc='lower right')
-    # test End
 
     try:
         return fig
