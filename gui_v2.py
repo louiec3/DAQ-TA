@@ -164,28 +164,25 @@ class MainMenuPage(ctk.CTkFrame):
         container.grid_rowconfigure(0, weight=1)
         container.grid_rowconfigure(1, weight=1)
         container.grid_rowconfigure(2, weight=1)
-        # container.grid_rowconfigure(3, weight=2)
 
-        container.grid_columnconfigure(0, weight=3)
-        container.grid_columnconfigure(1, weight=3)
-        container.grid_columnconfigure(2, weight=3)
-
-        # Page Widgets (temporary)
-        for i in range(3):
-            label = ctk.CTkLabel(container, text=f'Test {i}')
-            label.grid(row=i, column=i, sticky='nsew')
+        container.grid_columnconfigure(0, weight=1)
+        container.grid_columnconfigure(1, weight=1)
+        container.grid_columnconfigure(2, weight=1)
+        
+        title_label = ctk.CTkLabel(container, text=f'DAQ TA', font=ctk.CTkFont(size=38))
+        title_label.grid(row=0, column=1, sticky='nsew')
         
         btn1 = ctk.CTkButton(container, text='Session Analysis', command=lambda: parent.switch_frame(SessionAnalysisPage))
-        btn1.grid(row=0, column=0, sticky='nsew')
+        btn1.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)
 
         btn2 = ctk.CTkButton(container, text='Sector Analysis', command=lambda: parent.switch_frame(SectorAnalysisPage))
-        btn2.grid(row=1, column=0, sticky='nsew')
+        btn2.grid(row=1, column=1, sticky='nsew', padx=10, pady=10)
         
         btn3 = ctk.CTkButton(container, text='Coastdown Analysis', command=lambda: parent.switch_frame(CoastdownPage))
-        btn3.grid(row=2, column=0, sticky='nsew')
+        btn3.grid(row=2, column=1, sticky='nsew', padx=10, pady=10)
         
         btn4 = ctk.CTkButton(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
-        btn4.grid(row=2, column=1, sticky='nsew')
+        btn4.grid(row=2, column=2, sticky='nsew', padx=10, pady=10)
 
 class SessionAnalysisPage(tk.Frame):
     def __init__(self, parent):
