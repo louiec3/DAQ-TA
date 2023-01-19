@@ -45,6 +45,8 @@ DISTANCE_COL = 'Distance (km)'
 
 GPS_LATITUDE_COL = 'GPS_Latitude (#)'
 GPS_LONGITUDE_COL = 'GPS_Longitude (#)'
+GPS_LATITUDE_COL_2 = 'GPS_Latitude (°)'
+GPS_LONGITUDE_COL_2 = 'GPS_Longitude (°)'
 
 THROTTLE_COL = 'S8_tps1 (%)'
 FBRAKE_COL = 'F_Brake_Press (PSI)'
