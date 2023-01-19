@@ -196,8 +196,8 @@ def init_sector_analysis(df_data, df_sectors, var_col, normalize_stationary_bool
         print(df_sector_data)
         df_corner_stats = sector_stats(df_sector_data, var_col)
 
-        if c.GPS_LATITUDE_COL and c.GPS_LONGITUDE_COL in df_data.columns:
-            plot_trackmap(df_data, df_sectors, var_col)
+    if c.GPS_LATITUDE_COL and c.GPS_LONGITUDE_COL in df_data.columns:
+        plot_trackmap(df_data, df_sectors, var_col)
 
     return df_corner_stats
 
