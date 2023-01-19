@@ -606,6 +606,18 @@ class CoastdownPage(ctk.CTkFrame):
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=1, sticky='nsew', padx=2, pady=2)
 
+        # Configure button_frame
+        button_frame.grid_rowconfigure(0, weight=1)
+        button_frame.grid_rowconfigure(1, weight=1)
+        button_frame.grid_rowconfigure(2, weight=1)
+        button_frame.grid_rowconfigure(3, weight=1)
+        button_frame.grid_rowconfigure(4, weight=1)
+        button_frame.grid_rowconfigure(5, weight=1)
+        button_frame.grid_rowconfigure(6, weight=1)
+
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+
         # Header widgets
         page_title = ctk.CTkLabel(header_frame, text='DAQ TA: Coastdown Analysis', font=ctk.CTkFont(size=18))
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
@@ -630,7 +642,8 @@ class CoastdownPage(ctk.CTkFrame):
                 update_col_options_bool=False
                 )
             )
-        button1.place(y=30, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        # button1.place(y=30, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button1.grid(row=1, column=0)
 
         button2 = ctk.CTkButton(
             button_frame, 
@@ -641,7 +654,8 @@ class CoastdownPage(ctk.CTkFrame):
                 [self.inputpath1_label]
                 )
             )
-        button2.place(y=70, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        # button2.place(y=70, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button2.grid(row=1, column=1)
 
         # button3 = tk.Button(button_frame, text='Process', command=lambda: self.popup_graph(
         #     da.init_downforce_analysis(df_data1),
@@ -651,8 +665,9 @@ class CoastdownPage(ctk.CTkFrame):
             text='Process',
             width=BUTTONS_WIDTH, 
             command=lambda: self.process_coastdown_analysis(app.datafiles['aimdata1']['dataframe']))
-        button3.place(y=70, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
-        
+        # button3.place(y=70, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button3.grid(row=2, column=1)
+
         ## Statistics
         self.inputpath1_label = ctk.CTkLabel(
             info_frame, 
@@ -728,6 +743,18 @@ class OilAnalysisPage(ctk.CTkFrame):
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=1, columnspan=1, sticky='nsew', padx=2, pady=2)
         
+        # Configure button_frame grid
+        button_frame.grid_rowconfigure(0, weight=1)
+        button_frame.grid_rowconfigure(1, weight=1)
+        button_frame.grid_rowconfigure(2, weight=1)
+        button_frame.grid_rowconfigure(3, weight=1)
+        button_frame.grid_rowconfigure(4, weight=1)
+        button_frame.grid_rowconfigure(5, weight=1)
+        button_frame.grid_rowconfigure(6, weight=1)
+
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+        
         # Widgets
         page_title = ctk.CTkLabel(
             header_frame, 
@@ -756,7 +783,8 @@ class OilAnalysisPage(ctk.CTkFrame):
                 update_col_options_bool=False
                 )
             )
-        button1.place(y=30, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        # button1.place(y=30, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button1.grid(row=1, column=0)
 
         button2 = ctk.CTkButton(
             button_frame, 
@@ -771,21 +799,25 @@ class OilAnalysisPage(ctk.CTkFrame):
                 update_col_options_bool=False
                 )
             )
-        button2.place(y=70, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        # button2.place(y=70, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button2.grid(row=2, column=0)
 
         spinbox1 = tk.Spinbox(
             button_frame, 
             from_=0, 
             to=99, 
+            width=18,
             textvariable=app.spinbox_max_temp_diff_from_avg
             )
-        spinbox1.place(y=130, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
-        
+        # spinbox1.place(y=130, relx=.25, anchor=tk.CENTER)
+        spinbox1.grid(row=3, column=0)
+
         spinbox1_label = ctk.CTkLabel(
             button_frame, 
             text='Max temperature difference from\naverage (used to remove outliers)'
             )
-        spinbox1_label.place(relx=.25, y=180, anchor=tk.CENTER)
+        # spinbox1_label.place(relx=.25, y=180, anchor=tk.CENTER)
+        spinbox1_label.grid(row=4, column=0)
 
         button3 = ctk.CTkButton(
             button_frame, 
@@ -796,7 +828,9 @@ class OilAnalysisPage(ctk.CTkFrame):
                 [self.inputpath1_label, self.inputpath2_label]
                 )
             )
-        button3.place(y=30, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        # button3.place(y=30, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button3.grid(row=1, column=1)
+
 
         # button4 = tk.Button(button_frame, text='Process', command=lambda: init_oil_analysis([df_data1, df_data2], int(app.spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
         button4 = ctk.CTkButton(
@@ -808,7 +842,8 @@ class OilAnalysisPage(ctk.CTkFrame):
                 app.datafiles['aimdata2']['dataframe']
                 )
             ) # ** displays all graphs at once.
-        button4.place(y=70, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        # button4.place(y=70, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button4.grid(row=2, column=1)
 
         ## Statistics
         self.inputpath1_label = ctk.CTkLabel(
