@@ -961,6 +961,7 @@ class ExportButton():
         if isinstance(df, pd.DataFrame):
             print(path)
             df.to_csv(path, index=False)
+            messagebox.showinfo(title='Information', message=f'File saved successfully:\n{path}')
         
         self.update_outputpath_label(path)
 
