@@ -226,6 +226,10 @@ class SessionAnalysisPage(ctk.CTkFrame):
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=1, sticky='nsew', padx=2, pady=2)
 
+        # Configure header_frame
+        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)
+
         # Configure button_frame grid
         button_frame.grid_rowconfigure(0, weight=1)
         button_frame.grid_rowconfigure(1, weight=1)
@@ -381,7 +385,6 @@ class SectorAnalysisPage(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # container = tk.LabelFrame(self, text='Page: Sector Analysis', relief='ridge')
         container = ctk.CTkFrame(self)
         container.grid(row=0, column=0, sticky='nsew')
         
@@ -409,6 +412,10 @@ class SectorAnalysisPage(ctk.CTkFrame):
         button_frame.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=2, columnspan=2, sticky='nsew', padx=2, pady=2)
         
+        # Configure header_frame
+        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)
+
         # Configure button_frame grid
         button_frame.grid_rowconfigure(0, weight=1)
         button_frame.grid_rowconfigure(1, weight=1)
@@ -422,7 +429,11 @@ class SectorAnalysisPage(ctk.CTkFrame):
         button_frame.grid_columnconfigure(1, weight=1)
 
         # Header widgets
-        page_title = ctk.CTkLabel(header_frame, text='DAQ TA: Sector Analysis', font=ctk.CTkFont(size=18))
+        page_title = ctk.CTkLabel(
+            header_frame, 
+            text='DAQ TA: Sector Analysis', 
+            font=ctk.CTkFont(size=18)
+            )
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         
         main_btn = MainMenuButton(self, header_frame)
@@ -583,12 +594,11 @@ class CoastdownPage(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # container = tk.LabelFrame(self, text='Page: Coastdown Analysis', relief='ridge')
         container = ctk.CTkFrame(self)
         container.grid(row=0, column=0, sticky='nsew')
         
         container.grid_rowconfigure(0, weight=1)
-        container.grid_rowconfigure(1, weight=10)
+        container.grid_rowconfigure(1, weight=4)
         container.grid_rowconfigure(2, weight=4)
         container.grid_rowconfigure(3, weight=4)
 
@@ -602,9 +612,13 @@ class CoastdownPage(ctk.CTkFrame):
         info_frame = ctk.CTkFrame(container)
 
         header_frame.grid(row=0, column=0, columnspan=2, sticky='nsew')
-        treeview1_frame.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+        treeview1_frame.grid(row=1, column=0, columnspan=2, rowspan=2, sticky='nsew', padx=5, pady=5)
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=1, sticky='nsew', padx=2, pady=2)
+
+        # Configure header_frame
+        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)
 
         # Configure button_frame
         button_frame.grid_rowconfigure(0, weight=1)
@@ -623,8 +637,10 @@ class CoastdownPage(ctk.CTkFrame):
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
         
         main_btn = MainMenuButton(self, header_frame)
+        # export_btn = ExportButton(self, header_frame)
 
-        ## Treeview 1 widget   
+
+        ## Treeview widget   
         tree1 = TreeViewWidget(treeview1_frame)
 
         ## Main Buttons
@@ -743,6 +759,10 @@ class OilAnalysisPage(ctk.CTkFrame):
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=1, columnspan=1, sticky='nsew', padx=2, pady=2)
         
+        # Configure header_frame
+        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)
+
         # Configure button_frame grid
         button_frame.grid_rowconfigure(0, weight=1)
         button_frame.grid_rowconfigure(1, weight=1)
@@ -904,7 +924,10 @@ class MainMenuButton():
             width=BUTTONS_WIDTH,
             command=lambda: app.switch_frame(MainMenuPage)
             )
-        main_menu_btn.place(x=0, y=0)
+        # main_menu_btn.place(x=0, y=0)
+        main_menu_btn.grid(row=0, column=0, sticky='nw')
+        # cannot pack two items on same row
+        # **solution can be to create a 2 column grid for header_frame
 
         # Reset App() variables
         app.col_options_list = ['Columns'] # this will be the columns from input csv
@@ -922,13 +945,14 @@ class ExportButton():
     def __init__(self, parent, frame):
         self.parent = parent
 
-        export_button = ctk.CTkButton(
+        export_btn = ctk.CTkButton(
             frame,
             text='Export Data', 
             width=BUTTONS_WIDTH,
             command=lambda: self.export_df_to_csv()
             )
-        export_button.pack(anchor='ne', side='top')
+        # export_btn.pack(anchor='ne', side='top')
+        export_btn.grid(row=0, column=1, sticky='ne')        
 
     def export_df_to_csv(self):
         df = app.datafiles['analysis']['dataframe']
