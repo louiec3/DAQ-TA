@@ -27,7 +27,7 @@ class App(ctk.CTk):
     def __init__(self):
         ctk.CTk.__init__(self)
 
-        ctk.set_appearance_mode('light')
+        ctk.set_appearance_mode('System')
         self.iconbitmap('logo.ico')
 
         self.title('Multifunction Staistics Tool')
@@ -152,6 +152,9 @@ class App(ctk.CTk):
         
         return graph_window
 
+    def change_appearance_mode(self, new_appearance_mode):
+        ctk.set_appearance_mode(new_appearance_mode)
+
 class MainMenuPage(ctk.CTkFrame):
     def __init__(self, parent):
         # tk.Frame.__init__(self, parent)
@@ -179,20 +182,48 @@ class MainMenuPage(ctk.CTkFrame):
         #     label = ctk.CTkLabel(container, text=f'Test {i}')
         #     label.grid(row=i, column=i, sticky='nsew')
         
-        title_label = ctk.CTkLabel(container, text=f'DAQ TA', font=ctk.CTkFont(size=38))
+        title_label = ctk.CTkLabel(
+            container, 
+            text=f'DAQ TA', 
+            font=ctk.CTkFont(size=38)
+            )
         title_label.grid(row=0, column=1, sticky='nsew')
         
-        btn1 = ctk.CTkButton(container, text='Session Analysis', command=lambda: parent.switch_frame(SessionAnalysisPage))
+        btn1 = ctk.CTkButton(
+            container, 
+            text='Session Analysis', 
+            command=lambda: parent.switch_frame(SessionAnalysisPage)
+            )
         btn1.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)
 
-        btn2 = ctk.CTkButton(container, text='Sector Analysis', command=lambda: parent.switch_frame(SectorAnalysisPage))
+        btn2 = ctk.CTkButton(
+            container, 
+            text='Sector Analysis', 
+            command=lambda: parent.switch_frame(SectorAnalysisPage)
+            )
         btn2.grid(row=1, column=1, sticky='nsew', padx=10, pady=10)
         
-        btn3 = ctk.CTkButton(container, text='Coastdown Analysis', command=lambda: parent.switch_frame(CoastdownPage))
+        btn3 = ctk.CTkButton(
+            container, 
+            text='Coastdown Analysis', 
+            command=lambda: parent.switch_frame(CoastdownPage)
+            )
         btn3.grid(row=2, column=1, sticky='nsew', padx=10, pady=10)
         
-        btn4 = ctk.CTkButton(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
+        btn4 = ctk.CTkButton(
+            container, 
+            text='Oil Analysis', 
+            command=lambda: parent.switch_frame(OilAnalysisPage)
+            )
         btn4.grid(row=2, column=2, sticky='nsew', padx=10, pady=10)
+        
+        # btn5 = ctk.CTkButton(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
+        appearance_mode_optionemenu = ctk.CTkOptionMenu(
+            container, 
+            values=['Light', 'Dark', 'System'],
+            command=lambda x: app.change_appearance_mode(x)
+            )
+        appearance_mode_optionemenu.place(x=0, y=0)
 
 class SessionAnalysisPage(ctk.CTkFrame):
     def __init__(self, parent):
@@ -966,10 +997,7 @@ class ExportButton():
         self.update_outputpath_label(path)
 
     def update_outputpath_label(self, path):
-        # self.parent.outputpath_label['text'] = f'Output: {path}'
         self.parent.outputpath_label.configure(text=f'Output: {path}')
-
-        print('output path')
 
 class TreeViewWidget(ttk.Treeview):
     def __init__(self, parent):
