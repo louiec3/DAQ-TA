@@ -966,7 +966,10 @@ class ExportButton():
         self.update_outputpath_label(path)
 
     def update_outputpath_label(self, path):
-        self.parent.outputpath_label['text'] = f'Output: {path}'
+        # self.parent.outputpath_label['text'] = f'Output: {path}'
+        self.parent.outputpath_label.configure(text=f'Output: {path}')
+
+        print('output path')
 
 class TreeViewWidget(ttk.Treeview):
     def __init__(self, parent):
