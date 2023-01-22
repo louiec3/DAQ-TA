@@ -1,8 +1,20 @@
+###############################################################
+# DAQ TA
+# 
+# DAQ TA is a tool to automate the process of converting AiM 
+# files from Race Studio to generate statistics and graphs for 
+# certain tests.
+# 
+# Copyright (c) 2023 Louis Cundari III. All rights reserved.
+# Louis Cundari III
+# louiscundari3@outlook.com
+###############################################################
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
 import constants as c
-from functions import stationary_normalization, remove_stationary
+import functions as f
 
 def convert_to_seconds(df, col):
     df['Min'] = df[col].str.split(':').str[0].astype(int)
@@ -142,6 +154,7 @@ def plot_trackmap(df_data, df_sectors, var_col):
     df_sectors_list, df_all_sectors = sectors_dataframe(df_data, df_sectors)
 
     fig, ax = plt.subplots()
+    fig.canvas.manager.set_window_title('Track Map')
 
     plt.title(f'Trackmap: {var_col}')
     ax.plot(df_data[x], df_data[y], color='lightgrey', marker='.', )
@@ -165,13 +178,12 @@ def plot_trackmap(df_data, df_sectors, var_col):
 
     plt.gca().xaxis.set_major_locator(plt.NullLocator())
     plt.gca().yaxis.set_major_locator(plt.NullLocator())
-    plt.show(block=False)
-    # plt.show()
+    plt.show()
 
-    return None
-
+    return fig
 
 def init_sector_analysis(df_data, df_sectors, var_col, normalize_stationary_bool, rmv_stationary_bool):
+    f.clear_plots()
     # Sector analysis by time interval
     # ** Future: Add Time or Distance interval 
     # (Distance could be easier since corners will always be the same distance from 
@@ -183,12 +195,12 @@ def init_sector_analysis(df_data, df_sectors, var_col, normalize_stationary_bool
     
     if normalize_stationary_bool is True:
         print('Normalizing data')
-        df_sector_data = stationary_normalization(df_sector_data, var_col, rmv_stationary_bool)
+        df_sector_data = f.stationary_normalization(df_sector_data, var_col, rmv_stationary_bool)
         df_corner_stats = sector_stats(df_sector_data, var_col)
         
     elif normalize_stationary_bool is False and rmv_stationary_bool is True:
         print('Removing Stationary Only')
-        df_sector_data = remove_stationary(df_sector_data)
+        df_sector_data = f.remove_stationary(df_sector_data)
         df_corner_stats = sector_stats(df_sector_data, var_col)
 
     else:
@@ -196,8 +208,13 @@ def init_sector_analysis(df_data, df_sectors, var_col, normalize_stationary_bool
         print(df_sector_data)
         df_corner_stats = sector_stats(df_sector_data, var_col)
 
-        if c.GPS_LATITUDE_COL and c.GPS_LONGITUDE_COL in df_data.columns:
-            plot_trackmap(df_data, df_sectors, var_col)
+    if c.GPS_LATITUDE_COL and c.GPS_LONGITUDE_COL in df_data.columns:
+        # f.clear_plots()
+        fig = plot_trackmap(df_data, df_sectors, var_col)
+
+    elif c.GPS_LATITUDE_COL_2 and c.GPS_LONGITUDE_COL_2 in df_data.columns:
+        # f.clear_plots()
+        fig = plot_trackmap(df_data, df_sectors, var_col)
+
 
     return df_corner_stats
-

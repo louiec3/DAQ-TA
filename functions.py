@@ -1,7 +1,14 @@
-# To Do:
-# - Find a way to name sessions in limpmode graph
-
-import constants as c
+###############################################################
+# DAQ TA
+# 
+# DAQ TA is a tool to automate the process of converting AiM 
+# files from Race Studio to generate statistics and graphs for 
+# certain tests.
+# 
+# Copyright (c) 2023 Louis Cundari III. All rights reserved.
+# Louis Cundari III
+# louiscundari3@outlook.com
+###############################################################
 
 import pandas as pd
 import numpy as np
@@ -12,6 +19,8 @@ from scipy.optimize import curve_fit
 from os.path import dirname, exists
 import os
 import datetime as dt
+
+import constants as c
 
 ## Different functions need to be used based on the environment type
 try: # Test for terminal env
@@ -199,6 +208,14 @@ def var1_vs_var2_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f):
         return fig
     except:
         return None
+
+
+def clear_plots():
+    plt.cla()
+    plt.clf()
+    plt.close()
+
+    return None
 
 
 def subtract_car_weight(df, var_col):

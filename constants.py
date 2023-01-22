@@ -1,17 +1,29 @@
-# File saving variables
+###############################################################
+# DAQ TA
+# 
+# DAQ TA is a tool to automate the process of converting AiM 
+# files from Race Studio to generate statistics and graphs for 
+# certain tests.
+# 
+# Copyright (c) 2023 Louis Cundari III. All rights reserved.
+# Louis Cundari III
+# louiscundari3@outlook.com
+###############################################################
+
 import os
 from os.path import dirname
 from datetime import datetime
 import sys
 
+# File saving variables
 date = datetime.now()
 timestamp = date.strftime('%m-%d-%Y_%H-%M-%S')
 
 # determine if application is a script file or frozen exe
 if getattr(sys, 'frozen', False):
-    script_path = os.path.dirname(sys.executable) + '\\'
+    script_path = os.path.dirname(os.path.dirname(sys.executable)) + '\\'
 elif __file__:
-    script_path = os.path.dirname(__file__) + '\\'
+    script_path = os.path.dirname(__file__)
 
 print(script_path)
 
@@ -45,6 +57,8 @@ DISTANCE_COL = 'Distance (km)'
 
 GPS_LATITUDE_COL = 'GPS_Latitude (#)'
 GPS_LONGITUDE_COL = 'GPS_Longitude (#)'
+GPS_LATITUDE_COL_2 = 'GPS_Latitude (°)'
+GPS_LONGITUDE_COL_2 = 'GPS_Longitude (°)'
 
 THROTTLE_COL = 'S8_tps1 (%)'
 FBRAKE_COL = 'F_Brake_Press (PSI)'

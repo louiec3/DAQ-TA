@@ -1,11 +1,22 @@
+###############################################################
+# DAQ TA
+# 
+# DAQ TA is a tool to automate the process of converting AiM 
+# files from Race Studio to generate statistics and graphs for 
+# certain tests.
+# 
+# Copyright (c) 2023 Louis Cundari III. All rights reserved.
+# Louis Cundari III
+# louiscundari3@outlook.com
+###############################################################
+
 # Refer to this post to understand the foundation of the GUI code (object oriented programming with tkinter).
 # This will explain the purpose of the App class and the child Page classes.
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
 
+import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-
-import customtkinter as ctk
 
 # https://github.com/TomSchimansky/CustomTkinter/wiki/Packaging
 # Look into https://nuitka.net/ for packaging
@@ -21,12 +32,14 @@ import sector_analysis as sa
 import downforce_analysis as da
 import oil_analysis as oa
 
+BUTTONS_WIDTH = 100
+
 class App(ctk.CTk):
     def __init__(self):
         ctk.CTk.__init__(self)
 
-        ctk.set_appearance_mode('system')
-        self.iconbitmap("logo.ico")
+        ctk.set_appearance_mode('System')
+        self.iconbitmap('logo.ico')
 
         self.title('Multifunction Staistics Tool')
         self.geometry('700x600')
@@ -124,17 +137,18 @@ class App(ctk.CTk):
         filepath = app.datafiles[data_name]['path']
         df = app.datafiles[data_name]['dataframe']
 
-        leading_label = label['text'].split(':')[0] + ':'
-        label['text'] = f'{leading_label} {filepath}'
+        leading_label = label.cget('text').split(':')[0] + ':'
+        label.configure(text=f'{leading_label} {filepath}')
 
         # Insert list of new options (tk._setit hooks them up to var)
         if update_col_options_bool:
-            parent.optionmenu_var_col['menu'].delete(0, 'end')
+            # parent.optionmenu_var_col['menu'].delete(0, 'end')
             new_cols = df.columns
-            for col in new_cols:
-                parent.optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(app.var_col_choice, col))
+            # for col in new_cols:
+            #     parent.optionmenu_var_col['menu'].add_command(label=col, command=tk._setit(app.var_col_choice, col))
 
             app.var_col_choice.set(new_cols[-1])
+            parent.optionmenu_var_col.configure(values=new_cols, variable=app.var_col_choice)
 
     def create_output_path(self, analysis_name: str, file_extension: str):
         date = dt.datetime.now()
@@ -149,6 +163,9 @@ class App(ctk.CTk):
         
         return graph_window
 
+    def change_appearance_mode(self, new_appearance_mode):
+        ctk.set_appearance_mode(new_appearance_mode)
+
 class MainMenuPage(ctk.CTkFrame):
     def __init__(self, parent):
         # tk.Frame.__init__(self, parent)
@@ -157,7 +174,6 @@ class MainMenuPage(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # container = tk.LabelFrame(self, text='Page: Main Menu', relief='ridge')
         container = ctk.CTkFrame(self)
         container.grid(row=0, column=0, sticky='nsew')
         
@@ -168,32 +184,67 @@ class MainMenuPage(ctk.CTkFrame):
         container.grid_columnconfigure(0, weight=1)
         container.grid_columnconfigure(1, weight=1)
         container.grid_columnconfigure(2, weight=1)
+
+
+        # buttons_container = ctk.CTkFrame(container)
+        # buttons_container.grid(row=1, column=1)
+        # Page Widgets (temporary)
+        # for i in range(3):
+        #     label = ctk.CTkLabel(container, text=f'Test {i}')
+        #     label.grid(row=i, column=i, sticky='nsew')
         
-        title_label = ctk.CTkLabel(container, text=f'DAQ TA', font=ctk.CTkFont(size=38))
+        title_label = ctk.CTkLabel(
+            container, 
+            text=f'DAQ TA', 
+            font=ctk.CTkFont(size=38)
+            )
         title_label.grid(row=0, column=1, sticky='nsew')
         
-        btn1 = ctk.CTkButton(container, text='Session Analysis', command=lambda: parent.switch_frame(SessionAnalysisPage))
+        btn1 = ctk.CTkButton(
+            container, 
+            text='Session Analysis', 
+            command=lambda: parent.switch_frame(SessionAnalysisPage)
+            )
         btn1.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)
 
-        btn2 = ctk.CTkButton(container, text='Sector Analysis', command=lambda: parent.switch_frame(SectorAnalysisPage))
+        btn2 = ctk.CTkButton(
+            container, 
+            text='Sector Analysis', 
+            command=lambda: parent.switch_frame(SectorAnalysisPage)
+            )
         btn2.grid(row=1, column=1, sticky='nsew', padx=10, pady=10)
         
-        btn3 = ctk.CTkButton(container, text='Coastdown Analysis', command=lambda: parent.switch_frame(CoastdownPage))
+        btn3 = ctk.CTkButton(
+            container, 
+            text='Coastdown Analysis', 
+            command=lambda: parent.switch_frame(CoastdownPage)
+            )
         btn3.grid(row=2, column=1, sticky='nsew', padx=10, pady=10)
         
-        btn4 = ctk.CTkButton(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
+        btn4 = ctk.CTkButton(
+            container, 
+            text='Oil Analysis', 
+            command=lambda: parent.switch_frame(OilAnalysisPage)
+            )
         btn4.grid(row=2, column=2, sticky='nsew', padx=10, pady=10)
-
-class SessionAnalysisPage(tk.Frame):
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
-
-        self.output_path = ''
         
+        # btn5 = ctk.CTkButton(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
+        appearance_mode_optionemenu = ctk.CTkOptionMenu(
+            container, 
+            values=['System', 'Dark', 'Light'],
+            command=lambda x: app.change_appearance_mode(x)
+            )
+        appearance_mode_optionemenu.place(x=0, y=0)
+
+class SessionAnalysisPage(ctk.CTkFrame):
+    def __init__(self, parent):
+        ctk.CTkFrame.__init__(self, parent)
+
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        container = tk.LabelFrame(self, text='Page: Session Analysis', relief='ridge')
+        # container = tk.LabelFrame(self, text='Page: Session Analysis', relief='ridge')
+        container = ctk.CTkFrame(self)
         container.grid(row=0, column=0, sticky='nsew')
         
         container.grid_rowconfigure(0, weight=1)
@@ -203,26 +254,44 @@ class SessionAnalysisPage(tk.Frame):
 
         container.grid_columnconfigure(0, weight=2)
         container.grid_columnconfigure(1, weight=2)
-        # container.grid_columnconfigure(2, weight=2)
 
-        # Page Widgets
-        header_frame = tk.LabelFrame(container, bd=1, relief='flat')
-        treeview1_frame = tk.LabelFrame(container, text='Session Data', font=14, bd=2, relief='ridge')
-        treeview2_frame = tk.LabelFrame(container, text='Session Analysis', font=14, bd=2, relief='ridge')
-        button_frame = tk.LabelFrame(container, text='Options', font=14, bd=2, relief='ridge')
-        info_frame = tk.LabelFrame(container, text='Info', font=14, bd=2, relief='ridge')
+        # Page containers
+        header_frame = ctk.CTkFrame(container)
+        treeview1_frame = ctk.CTkFrame(container)
+        treeview2_frame = ctk.CTkFrame(container)
+        button_frame = ctk.CTkFrame(container)
+        info_frame = ctk.CTkFrame(container)
 
-        header_frame.grid(row=0, column=0, columnspan=2, sticky='nsew', padx=2, pady=2)
-        treeview1_frame.grid(row=1, rowspan=2, column=0, sticky='nsew', padx=2, pady=2)
-        treeview2_frame.grid(row=1, rowspan=2, column=1, sticky='nsew', padx=2, pady=2)
+        header_frame.grid(row=0, column=0, columnspan=2, sticky='nsew')
+        treeview1_frame.grid(row=1, rowspan=2, column=0, sticky='nsew', padx=5, pady=5)
+        treeview2_frame.grid(row=1, rowspan=2, column=1, sticky='nsew', padx=5, pady=5)
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=1, sticky='nsew', padx=2, pady=2)
 
-        page_title = tk.Label(header_frame, text='DAQ TA: Session Analysis')
-        page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
-        page_title.config(font=('arial', 14))
+        # Configure header_frame
+        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)
 
-        # Header buttons
+        # Configure button_frame grid
+        button_frame.grid_rowconfigure(0, weight=1)
+        button_frame.grid_rowconfigure(1, weight=1)
+        button_frame.grid_rowconfigure(2, weight=1)
+        button_frame.grid_rowconfigure(3, weight=1)
+        button_frame.grid_rowconfigure(4, weight=1)
+        button_frame.grid_rowconfigure(5, weight=1)
+        button_frame.grid_rowconfigure(6, weight=1)
+
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+
+        # Header widgets
+        page_title = ctk.CTkLabel(
+            header_frame, 
+            text='DAQ TA: Session Analysis', 
+            font=ctk.CTkFont(size=18)
+            )
+        page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
+
         main_btn = MainMenuButton(self, header_frame)
         export_btn = ExportButton(self, header_frame)
 
@@ -231,44 +300,100 @@ class SessionAnalysisPage(tk.Frame):
         tree2 = TreeViewWidget(treeview2_frame)
 
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True, update_col_options_bool=True))
-        button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
+        button1 = ctk.CTkButton(
+            button_frame, 
+            text='Data File',
+            width=BUTTONS_WIDTH,
+            command=lambda: app.ask_for_data_file(
+                self, 
+                tree1, 
+                'aimdata1', 
+                self.inputpath1_label, 
+                aim_data_bool=True, 
+                update_col_options_bool=True
+                )
+            )
+        # button1.place(y=30, relx=.25, width=90, anchor=tk.CENTER)
+        button1.grid(row=1, column=0)
 
-        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [self.inputpath1_label, self.outputpath_label]))
-        button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
-
-        button3 = tk.Button(button_frame, text='Process Data', command=lambda: self.process_session_analysis(tree2, 'aimdata1'))
-        button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
-
-        # Options
         # These are self variables since we need to modify their attributes later on
-        self.optionmenu_var_col = tk.OptionMenu(button_frame, app.var_col_choice, *app.col_options_list, command=lambda x: print(f'Column selected: {x}'))
-        self.optionmenu_var_col.place(y=70, relx=.75, anchor=tk.CENTER)
+        self.optionmenu_var_col = ctk.CTkOptionMenu(
+            master=button_frame,
+            width=BUTTONS_WIDTH,
+            values=app.col_options_list,
+            command=lambda x: print(f'Column selected: {x}')
+            )
+        # self.optionmenu_var_col.place(y=70, relx=.75, anchor=tk.CENTER)
+        self.optionmenu_var_col.grid(row=2, column=0)
 
-        self.checkbox_normalize = tk.Checkbutton(button_frame, text='Normalize stationary Values (description)', 
-                                variable=app.normalize_stationary_bool, onvalue=1, offvalue=0, justify=tk.LEFT)
-        self.checkbox_normalize.place(y=122, relx=.5, anchor=tk.CENTER)
+        self.checkbox_normalize = ctk.CTkCheckBox(
+            button_frame, 
+            text='Normalize stationary\nvalues',
+            variable=app.normalize_stationary_bool, 
+            onvalue=1, 
+            offvalue=0, 
+            checkbox_width=20,
+            checkbox_height=20
+            )
+        # self.checkbox_normalize.place(y=120, relx=.5, anchor=tk.CENTER)
+        self.checkbox_normalize.grid(row=3, column=0)
 
-        self.checkbox_rmv_stationary = tk.Checkbutton(button_frame, text='Remove stationary values (description)    ', 
-                                variable=app.rmv_stationary_bool, onvalue=1, offvalue=0, justify=tk.LEFT)
-        self.checkbox_rmv_stationary.place(y=142, relx=.5, anchor=tk.CENTER)
+        self.checkbox_rmv_stationary = ctk.CTkCheckBox(
+            button_frame, 
+            text='Remove stationary\nvalues', 
+            variable=app.rmv_stationary_bool, 
+            onvalue=1, 
+            offvalue=0, 
+            checkbox_width=20,
+            checkbox_height=20
+            )
+        # self.checkbox_rmv_stationary.place(y=145, relx=.5, anchor=tk.CENTER)
+        self.checkbox_rmv_stationary.grid(row=4, column=0)
 
-        ## Statistics
-        self.inputpath1_label = tk.Label(
+        button2 = ctk.CTkButton(
+            button_frame, 
+            text='Clear Data',
+            width=BUTTONS_WIDTH, 
+            command=lambda: clear_treeview(
+                [tree1, tree2], 
+                [self.inputpath1_label,
+                 self.outputpath_label]
+                )
+            )
+        # button2.place(y=70, relx=.25, width=90, anchor=tk.CENTER)
+        button2.grid(row=1, column=1)
+
+        button3 = ctk.CTkButton(
+            button_frame,
+            text='Process',
+            width=BUTTONS_WIDTH,
+            command=lambda: self.process_session_analysis(
+                tree2,
+                'aimdata1'
+                )
+            )
+        # button3.place(y=30, relx=.75, width=90, anchor=tk.CENTER)
+        button3.grid(row=2, column=1)
+
+
+        ## Info Frame
+        self.inputpath1_label = ctk.CTkLabel(
             info_frame, 
             text='File 1: ',
             wraplength=450,
-            justify=tk.LEFT)
+            justify=tk.LEFT
+            )
         self.inputpath1_label.place(y=10, x=10)
 
-        self.outputpath_label = tk.Label(
+        self.outputpath_label = ctk.CTkLabel(
             info_frame, 
             text='Output: ',
             wraplength=450,
-            justify=tk.LEFT)
+            justify=tk.LEFT
+            )
         self.outputpath_label.place(y=45, x=10)
 
-        info1_label = tk.Label(
+        info1_label = ctk.CTkLabel(
             info_frame, 
             text='Mandatory columns:\nTime, Distance',
             wraplength=350,
@@ -284,24 +409,25 @@ class SessionAnalysisPage(tk.Frame):
                             app.rmv_stationary_bool.get()
                             )
             clear_treeview([tree], [])
-            TreeViewWidget.display_csv(tree, df_processed)
 
             filepath = app.create_output_path('session_analysis', 'csv')
             app.datafiles['analysis'] = {'path': filepath, 'dataframe': df_processed}
+            
+            TreeViewWidget.display_csv(tree, df_processed)
         except KeyError as e:
             if str(e) == 'aimdata1':
                 print('No data selected.')
         except:
             raise
 
-class SectorAnalysisPage(tk.Frame):
+class SectorAnalysisPage(ctk.CTkFrame):
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        container = tk.LabelFrame(self, text='Page: Sector Analysis', relief='ridge')
+        container = ctk.CTkFrame(self)
         container.grid(row=0, column=0, sticky='nsew')
         
         container.grid_rowconfigure(0, weight=1)
@@ -313,25 +439,44 @@ class SectorAnalysisPage(tk.Frame):
         container.grid_columnconfigure(1, weight=2)
         container.grid_columnconfigure(2, weight=2)
 
-        ## Page Widgets
-        header_frame = tk.LabelFrame(container, bd=1, relief='flat')
-        treeview1_frame = tk.LabelFrame(container, text='Session Data', font=14, bd=2, relief='ridge')
-        treeview2_frame = tk.LabelFrame(container, text='Sectors', font=14, bd=2, relief='ridge')
-        treeview3_frame = tk.LabelFrame(container, text='Analysis', font=14, bd=2, relief='ridge')
-        button_frame = tk.LabelFrame(container, text='Options', font=14, bd=2, relief='ridge')
-        info_frame = tk.LabelFrame(container, text='Info', font=14, bd=2, relief='ridge')
+        ## Page containers
+        header_frame = ctk.CTkFrame(container)
+        treeview1_frame = ctk.CTkFrame(container)
+        treeview2_frame = ctk.CTkFrame(container)
+        treeview3_frame = ctk.CTkFrame(container)
+        button_frame = ctk.CTkFrame(container)
+        info_frame = ctk.CTkFrame(container)
 
-        header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=2, pady=2)
+        header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew')
         treeview1_frame.grid(row=1, rowspan=2, column=0, sticky='nsew', padx=2, pady=2)
         treeview2_frame.grid(row=1, rowspan=2, column=1, sticky='nsew', padx=2, pady=2)
         treeview3_frame.grid(row=1, rowspan=2, column=2, sticky='nsew', padx=2, pady=2)
         button_frame.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=2, columnspan=2, sticky='nsew', padx=2, pady=2)
         
-        # Widgets
-        page_title = tk.Label(header_frame, text='DAQ TA: Sector Analysis')
+        # Configure header_frame
+        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)
+
+        # Configure button_frame grid
+        button_frame.grid_rowconfigure(0, weight=1)
+        button_frame.grid_rowconfigure(1, weight=1)
+        button_frame.grid_rowconfigure(2, weight=1)
+        button_frame.grid_rowconfigure(3, weight=1)
+        button_frame.grid_rowconfigure(4, weight=1)
+        button_frame.grid_rowconfigure(5, weight=1)
+        button_frame.grid_rowconfigure(6, weight=1)
+
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+
+        # Header widgets
+        page_title = ctk.CTkLabel(
+            header_frame, 
+            text='DAQ TA: Sector Analysis', 
+            font=ctk.CTkFont(size=18)
+            )
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
-        page_title.config(font=('arial', 14))
         
         main_btn = MainMenuButton(self, header_frame)
         export_btn = ExportButton(self, header_frame)
@@ -342,55 +487,126 @@ class SectorAnalysisPage(tk.Frame):
         tree3 = TreeViewWidget(treeview3_frame)
         
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True, update_col_options_bool=True))
-        button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
+        button1 = ctk.CTkButton(
+            button_frame, 
+            text='Data File', 
+            width=BUTTONS_WIDTH,
+            command=lambda: app.ask_for_data_file(
+                self, 
+                tree1, 
+                'aimdata1', 
+                self.inputpath1_label, 
+                aim_data_bool=True, 
+                update_col_options_bool=True
+                )
+            )
+        # button1.place(y=30, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button1.grid(row=1, column=0)
 
-        button2 = tk.Button(button_frame, text='Sectors File', command=lambda: app.ask_for_data_file(self, tree2, 'sectors', self.inputpath2_label, aim_data_bool=False, update_col_options_bool=False))
-        button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
+        button2 = ctk.CTkButton(
+            button_frame, 
+            text='Sectors File', 
+            width=BUTTONS_WIDTH,
+            command=lambda: app.ask_for_data_file(
+                self, 
+                tree2, 
+                'sectors', 
+                self.inputpath2_label, 
+                aim_data_bool=False, 
+                update_col_options_bool=False
+                )
+            )
+        # button2.place(y=70, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button2.grid(row=2, column=0)
 
-        button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2, tree3], [self.inputpath1_label, self.inputpath2_label, self.outputpath_label]))
-        button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
-        # **
-        button4 = tk.Button(button_frame, text='Process Data', command=lambda: self.process_sector_analysis(tree3))
-        button4.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
+        ## Options (compare this section to SessionAnalysisPage)        
+        self.optionmenu_var_col = ctk.CTkOptionMenu(
+            master=button_frame, 
+            width=BUTTONS_WIDTH,
+            values=app.col_options_list, 
+            command=lambda x: print(f'Column selected: {x}')
+            )
+        # self.optionmenu_var_col.place(y=110, relx=.25, anchor=tk.CENTER)
+        self.optionmenu_var_col.grid(row=3, column=0)
+
+        self.checkbox_normalize = ctk.CTkCheckBox(
+            button_frame, 
+            text='Normalize stationary\nvalues',
+            variable=app.normalize_stationary_bool, 
+            onvalue=1, 
+            offvalue=0, 
+            checkbox_width=20,
+            checkbox_height=20
+            )
+        # self.checkbox_normalize.place(y=110, relx=.5, anchor=tk.CENTER)
+        self.checkbox_normalize.grid(row=4, column=0)
+
+        self.checkbox_rmv_stationary = ctk.CTkCheckBox(
+            button_frame, 
+            text='Remove stationary\nvalues',
+            variable=app.rmv_stationary_bool, 
+            onvalue=1, 
+            offvalue=0, 
+            checkbox_width=20,
+            checkbox_height=20
+            )
+        # self.checkbox_rmv_stationary.place(y=150, relx=.5, anchor=tk.CENTER)
+        self.checkbox_rmv_stationary.grid(row=5, column=0)
         
-        ## Options
-        self.optionmenu_var_col = tk.OptionMenu(button_frame, app.var_col_choice, *app.col_options_list, command=lambda x: print(f'Column selected: {x}'))
-        self.optionmenu_var_col.place(y=110, relx=.25, anchor=tk.CENTER)
+        button3 = ctk.CTkButton(
+            button_frame, 
+            text='Clear Data',
+            width=BUTTONS_WIDTH,
+            command=lambda: clear_treeview(
+                [tree1, tree2, tree3], 
+                [self.inputpath1_label, self.inputpath2_label, self.outputpath_label]
+                )
+            )
+        # button3.place(y=30, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button3.grid(row=1, column=1)
 
-        self.checkbox_normalize = tk.Checkbutton(button_frame, text='Normalize stationary\nvalues (description)', 
-                                variable=app.normalize_stationary_bool, onvalue=1, offvalue=0, justify=tk.LEFT)
-        self.checkbox_normalize.place(y=110, relx=.75, anchor=tk.CENTER)
+        button4 = ctk.CTkButton(
+            button_frame, 
+            text='Process', 
+            width=BUTTONS_WIDTH,
+            command=lambda: self.process_sector_analysis(tree3) ## ** check to see if a name needs to be given (compare to process_session_analysis)
+            )
+        # button4.place(y=70, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button4.grid(row=2, column=1)
 
-        self.checkbox_rmv_stationary = tk.Checkbutton(button_frame, text='Remove stationary\nvalues (description)    ', 
-                                variable=app.rmv_stationary_bool, onvalue=1, offvalue=0, justify=tk.LEFT)
-        self.checkbox_rmv_stationary.place(y=150, relx=.75, anchor=tk.CENTER)
-
-        ## Statistics
-        self.inputpath1_label = tk.Label(
+        ## Info Frame
+        self.inputpath1_label = ctk.CTkLabel(
             info_frame,
             text='File 1: ',
             wraplength=450,
             justify=tk.LEFT)
         self.inputpath1_label.place(y=10, x=10)
 
-        self.inputpath2_label = tk.Label(info_frame, text='File 2: ', wraplength=450, justify=tk.LEFT)
+        self.inputpath2_label = ctk.CTkLabel(
+            info_frame, 
+            text='File 2: ',
+            wraplength=450, 
+            justify=tk.LEFT
+            )
         self.inputpath2_label.place(y=45, x=10)
 
-        self.outputpath_label = tk.Label(
+        self.outputpath_label = ctk.CTkLabel(
             info_frame, 
             text='Output: ',
             wraplength=450,
-            justify=tk.LEFT)
-        self.outputpath_label.place(y=65, x=10)
+            justify=tk.LEFT
+            )
+        self.outputpath_label.place(y=80, x=10)
 
-        stat1_label = tk.Label(info_frame, text=' ', wraplength=350, justify=tk.LEFT)
-        stat1_label.place(y=95, x=10)
+        stat1_label = ctk.CTkLabel(
+            info_frame, 
+            text='Mandatory columns:\nTime, Distance\n\nOptional Track Map Columns:\nGPS Latitude, GPS Longitude', 
+            wraplength=350, 
+            justify=tk.LEFT
+            )
+        stat1_label.place(y=155, x=10)
 
-        stat2_label = tk.Label(info_frame, text='Mandatory columns: Time, Distance', wraplength=350, justify=tk.LEFT)
-        stat2_label.place(y=1055, x=10)
-
-    def process_sector_analysis(self, treeview):
+    def process_sector_analysis(self, tree):
         # helper function to get dataframe from session_analysis and display to GUI
         try:
             df_analysis = sa.init_sector_analysis(
@@ -400,7 +616,7 @@ class SectorAnalysisPage(tk.Frame):
                                 app.normalize_stationary_bool.get(),
                                 app.rmv_stationary_bool.get()
                                 )
-            
+            clear_treeview([tree], [])
             filepath = app.create_output_path('session_analysis', 'csv')
             app.datafiles['analysis'] = {'path': filepath, 'dataframe': df_analysis}
             
@@ -409,78 +625,138 @@ class SectorAnalysisPage(tk.Frame):
             first_column = df_analysis.pop('Stats')
             df_analysis.insert(0, 'Stats', first_column)
 
-            TreeViewWidget.display_csv(treeview, df_analysis)
+            TreeViewWidget.display_csv(tree, df_analysis)
         except KeyError:
             print('No data selected.')
 
-class CoastdownPage(tk.Frame):
+class CoastdownPage(ctk.CTkFrame):
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        container = tk.LabelFrame(self, text='Page: Coastdown Analysis', relief='ridge')
+        container = ctk.CTkFrame(self)
         container.grid(row=0, column=0, sticky='nsew')
         
         container.grid_rowconfigure(0, weight=1)
-        container.grid_rowconfigure(1, weight=2)
-        container.grid_rowconfigure(2, weight=2)
-        container.grid_rowconfigure(3, weight=2)
+        container.grid_rowconfigure(1, weight=4)
+        container.grid_rowconfigure(2, weight=4)
+        container.grid_rowconfigure(3, weight=4)
 
         container.grid_columnconfigure(0, weight=2)
         container.grid_columnconfigure(1, weight=2)
-        container.grid_columnconfigure(2, weight=2)
 
-        ## Page layout
-        header_frame = tk.LabelFrame(container, bd=1, relief='flat')
-        treeview1_frame = tk.LabelFrame(container, text='Coastdown Data', font=14, bd=2, relief='ridge')
-        plot1_frame = tk.LabelFrame(container, text='Downforce vs Speed', font=14, bd=2, relief='ridge')
-        button_frame = tk.LabelFrame(container, text='Options', font=14, bd=2, relief='ridge')
-        info_frame = tk.LabelFrame(container, text='Info', font=14, bd=2, relief='ridge')
+        # Page containers
+        header_frame = ctk.CTkFrame(container)
+        treeview1_frame = ctk.CTkFrame(container)
+        button_frame = ctk.CTkFrame(container)
+        info_frame = ctk.CTkFrame(container)
 
-        header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=2, pady=2)
-        treeview1_frame.grid(row=1, rowspan=2, column=0, columnspan=2, sticky='nsew', padx=2, pady=2)
-        plot1_frame.grid(row=1, rowspan=2, column=2, sticky='nsew', padx=2, pady=2)
+        header_frame.grid(row=0, column=0, columnspan=2, sticky='nsew')
+        treeview1_frame.grid(row=1, column=0, columnspan=2, rowspan=2, sticky='nsew', padx=5, pady=5)
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
-        info_frame.grid(row=3, column=1, columnspan=2, sticky='nsew', padx=2, pady=2)
-        
-        # Widgets
-        page_title = tk.Label(header_frame, text='DAQ TA: Coastdown Analysis')
+        info_frame.grid(row=3, column=1, sticky='nsew', padx=2, pady=2)
+
+        # Configure header_frame
+        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)
+
+        # Configure button_frame
+        button_frame.grid_rowconfigure(0, weight=1)
+        button_frame.grid_rowconfigure(1, weight=1)
+        button_frame.grid_rowconfigure(2, weight=1)
+        button_frame.grid_rowconfigure(3, weight=1)
+        button_frame.grid_rowconfigure(4, weight=1)
+        button_frame.grid_rowconfigure(5, weight=1)
+        button_frame.grid_rowconfigure(6, weight=1)
+
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+
+        # Header widgets
+        page_title = ctk.CTkLabel(header_frame, text='DAQ TA: Coastdown Analysis', font=ctk.CTkFont(size=18))
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
-        page_title.config(font=('arial', 14))
         
         main_btn = MainMenuButton(self, header_frame)
+        # export_btn = ExportButton(self, header_frame)
 
-        ## Treeview 1 widget   
+
+        ## Treeview widget   
         tree1 = TreeViewWidget(treeview1_frame)
 
         ## Main Buttons
         # button1 = tk.Button(button_frame, text='Data File', command=lambda: select_datafile1(tree1_data, filepath_label1))
-        button1 = tk.Button(button_frame, text='Data File', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True, update_col_options_bool=False))
-        button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
+        button1 = ctk.CTkButton(
+            button_frame, 
+            text='Data File',
+            width=BUTTONS_WIDTH, 
+            command=lambda: app.ask_for_data_file(
+                self, 
+                tree1, 
+                'aimdata1', 
+                self.inputpath1_label, 
+                aim_data_bool=True, 
+                update_col_options_bool=False
+                )
+            )
+        # button1.place(y=30, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button1.grid(row=1, column=0)
 
-        button2 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1], [self.inputpath1_label]))
-        button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
+        button2 = ctk.CTkButton(
+            button_frame, 
+            text='Clear Data',
+            width=BUTTONS_WIDTH, 
+            command=lambda: clear_treeview(
+                [tree1], 
+                [self.inputpath1_label]
+                )
+            )
+        # button2.place(y=70, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button2.grid(row=1, column=1)
 
-        # button3 = tk.Button(button_frame, text='Process Data', command=lambda: self.popup_graph(
+        # button3 = tk.Button(button_frame, text='Process', command=lambda: self.popup_graph(
         #     da.init_downforce_analysis(df_data1),
         #     create_window('Downforce vs Speed')))
-        button3 = tk.Button(button_frame, text='Process Data', command=lambda: self.process_coastdown_analysis(app.datafiles['aimdata1']['dataframe']))
-        button3.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
-        
+        button3 = ctk.CTkButton(
+            button_frame, 
+            text='Process',
+            width=BUTTONS_WIDTH, 
+            command=lambda: self.process_coastdown_analysis(app.datafiles['aimdata1']['dataframe']))
+        # button3.place(y=70, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button3.grid(row=2, column=1)
+
         ## Statistics
-        self.inputpath1_label = tk.Label(info_frame, text='File 1: ', wraplength=450, justify=tk.LEFT)
+        self.inputpath1_label = ctk.CTkLabel(
+            info_frame, 
+            text='File 1: ',
+            wraplength=450, 
+            justify=tk.LEFT
+            )
         self.inputpath1_label.place(y=10, x=10)
 
-        stat1_label = tk.Label(info_frame, text=' ', wraplength=350, justify=tk.LEFT)
+        stat1_label = ctk.CTkLabel(
+            info_frame, 
+            text=' ', 
+            wraplength=350, 
+            justify=tk.LEFT
+            )
         stat1_label.place(y=75, x=10)
 
-        stat2_label = tk.Label(info_frame, text='Mandatory columns:', wraplength=350, justify=tk.LEFT)
+        stat2_label = ctk.CTkLabel(
+            info_frame, 
+            text='Mandatory columns:', 
+            wraplength=350, 
+            justify=tk.LEFT
+            )
         stat2_label.place(y=95, x=10)
 
-        stat3_label = tk.Label(info_frame, text='Time, Distance, YawRate, Front_Left_Forc, Front_Right_Forc, Rear_Right_Force, Rear_Left_Force, S8_tps1, F_Brake_Press, R_Brake_Pres, GPS_Speed',
-            wraplength=350, justify=tk.LEFT)
+        stat3_label = ctk.CTkLabel(
+            info_frame, 
+            text='Time, Distance, YawRate, Front_Left_Forc, Front_Right_Forc, Rear_Right_Force, Rear_Left_Force, S8_tps1, F_Brake_Press, R_Brake_Pres, GPS_Speed',
+            wraplength=350, 
+            justify=tk.LEFT
+            )
         stat3_label.place(y=115, x=10)
 
     def process_coastdown_analysis(self, df):
@@ -493,14 +769,14 @@ class CoastdownPage(tk.Frame):
         except:
             raise
 
-class OilAnalysisPage(tk.Frame):
+class OilAnalysisPage(ctk.CTkFrame):
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent)
         
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        container = tk.LabelFrame(self, text='Page: Oil Analysis', relief='ridge')
+        container = ctk.CTkFrame(self)
         container.grid(row=0, column=0, sticky='nsew')
         
         container.grid_rowconfigure(0, weight=1)
@@ -510,31 +786,44 @@ class OilAnalysisPage(tk.Frame):
 
         container.grid_columnconfigure(0, weight=2)
         container.grid_columnconfigure(1, weight=2)
-        container.grid_columnconfigure(2, weight=1)
+        # container.grid_columnconfigure(2, weight=1)
 
         ## Page layout
-        header_frame = tk.LabelFrame(container, bd=1, relief='flat')
-        treeview1_frame = tk.LabelFrame(container, text='100% Oil', font=14, bd=2, relief='ridge')
-        treeview2_frame = tk.LabelFrame(container, text='x% Oil', font=14, bd=2, relief='ridge')
-        plot1_frame = tk.LabelFrame(container, text='Coolant Temp vs Time', font=14, bd=2, relief='ridge')
-        plot2_frame = tk.LabelFrame(container, text='Coolant Temp vs RPM', font=14, bd=2, relief='ridge')
-        plot3_frame = tk.LabelFrame(container, text='RPM % Change', font=14, bd=2, relief='ridge')
-        button_frame = tk.LabelFrame(container, text='Options', font=14, bd=2, relief='ridge')
-        info_frame = tk.LabelFrame(container, text='Info', font=14, bd=2, relief='ridge')
+        header_frame = ctk.CTkFrame(container)
+        treeview1_frame = ctk.CTkFrame(container)
+        treeview2_frame = ctk.CTkFrame(container)
+        button_frame = ctk.CTkFrame(container)
+        info_frame = ctk.CTkFrame(container)
 
-        header_frame.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=2, pady=2)
+        header_frame.grid(row=0, column=0, columnspan=2, sticky='nsew')
         treeview1_frame.grid(row=1, rowspan=2, column=0, sticky='nsew', padx=2, pady=2)
         treeview2_frame.grid(row=1, rowspan=2, column=1, sticky='nsew', padx=2, pady=2)
-        plot1_frame.grid(row=1, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
-        plot2_frame.grid(row=2, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
-        plot3_frame.grid(row=3, rowspan=1, column=2, sticky='nsew', padx=2, pady=2)
         button_frame.grid(row=3, column=0, sticky='nsew', padx=2, pady=2)
         info_frame.grid(row=3, column=1, columnspan=1, sticky='nsew', padx=2, pady=2)
         
+        # Configure header_frame
+        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)
+
+        # Configure button_frame grid
+        button_frame.grid_rowconfigure(0, weight=1)
+        button_frame.grid_rowconfigure(1, weight=1)
+        button_frame.grid_rowconfigure(2, weight=1)
+        button_frame.grid_rowconfigure(3, weight=1)
+        button_frame.grid_rowconfigure(4, weight=1)
+        button_frame.grid_rowconfigure(5, weight=1)
+        button_frame.grid_rowconfigure(6, weight=1)
+
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+        
         # Widgets
-        page_title = tk.Label(header_frame, text='DAQ TA: Oil Analysis')
+        page_title = ctk.CTkLabel(
+            header_frame, 
+            text='DAQ TA: Oil Analysis', 
+            font=ctk.CTkFont(size=18)
+            )
         page_title.place(relx=.5, rely=.5, anchor=tk.CENTER)
-        page_title.config(font=('arial', 14))
         
         main_btm = MainMenuButton(self, header_frame)
 
@@ -543,39 +832,113 @@ class OilAnalysisPage(tk.Frame):
         tree2 = TreeViewWidget(treeview2_frame)
         
         ## Main Buttons
-        button1 = tk.Button(button_frame, text='Oil File 1', command=lambda: app.ask_for_data_file(self, tree1, 'aimdata1', self.inputpath1_label, aim_data_bool=True, update_col_options_bool=False))
-        button1.place(y=30, relx=.25, width=80, anchor=tk.CENTER)
+        button1 = ctk.CTkButton(
+            button_frame, 
+            text='Oil File 1',
+            width=BUTTONS_WIDTH, 
+            command=lambda: app.ask_for_data_file(
+                self, 
+                tree1, 
+                'aimdata1', 
+                self.inputpath1_label, 
+                aim_data_bool=True, 
+                update_col_options_bool=False
+                )
+            )
+        # button1.place(y=30, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button1.grid(row=1, column=0)
 
-        button2 = tk.Button(button_frame, text='Oil File 2', command=lambda: app.ask_for_data_file(self, tree2, 'aimdata2', self.inputpath2_label, aim_data_bool=True, update_col_options_bool=False))
-        button2.place(y=70, relx=.25, width=80, anchor=tk.CENTER)
+        button2 = ctk.CTkButton(
+            button_frame, 
+            text='Oil File 2',
+            width=BUTTONS_WIDTH, 
+            command=lambda: app.ask_for_data_file(
+                self, 
+                tree2, 
+                'aimdata2', 
+                self.inputpath2_label, 
+                aim_data_bool=True, 
+                update_col_options_bool=False
+                )
+            )
+        # button2.place(y=70, relx=.25, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button2.grid(row=2, column=0)
 
-        button3 = tk.Button(button_frame, text='Clear Data', command=lambda: clear_treeview([tree1, tree2], [self.inputpath1_label, self.inputpath2_label]))
-        button3.place(y=30, relx=.75, width=80, anchor=tk.CENTER)
+        spinbox1 = tk.Spinbox(
+            button_frame, 
+            from_=0, 
+            to=99, 
+            width=18,
+            textvariable=app.spinbox_max_temp_diff_from_avg
+            )
+        # spinbox1.place(y=130, relx=.25, anchor=tk.CENTER)
+        spinbox1.grid(row=3, column=0)
 
-        # button4 = tk.Button(button_frame, text='Process Data', command=lambda: init_oil_analysis([df_data1, df_data2], int(app.spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
-        button4 = tk.Button(button_frame, text='Process Data', command=lambda: self.process_oil_analysis(app.datafiles['aimdata1']['dataframe'], app.datafiles['aimdata2']['dataframe'])) # ** displays all graphs at once.
-        button4.place(y=70, relx=.75, width=80, anchor=tk.CENTER)
+        spinbox1_label = ctk.CTkLabel(
+            button_frame, 
+            text='Max temperature difference from\naverage (used to remove outliers)'
+            )
+        # spinbox1_label.place(relx=.25, y=180, anchor=tk.CENTER)
+        spinbox1_label.grid(row=4, column=0)
 
-        spinbox1 = tk.Spinbox(button_frame, from_=0, to=99, textvariable=app.spinbox_max_temp_diff_from_avg)
-        spinbox1.place(y=140, relx=.25, width=80, anchor=tk.CENTER)
-        spinbox1_label = tk.Label(button_frame, text='Max temperature difference from\naverage (used to remove outliers)')
-        spinbox1_label.place(relx=.25, y=110, anchor=tk.CENTER)
+        button3 = ctk.CTkButton(
+            button_frame, 
+            text='Clear Data',
+            width=BUTTONS_WIDTH, 
+            command=lambda: clear_treeview(
+                [tree1, tree2], 
+                [self.inputpath1_label, self.inputpath2_label]
+                )
+            )
+        # button3.place(y=30, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button3.grid(row=1, column=1)
+
+
+        # button4 = tk.Button(button_frame, text='Process', command=lambda: init_oil_analysis([df_data1, df_data2], int(app.spinbox_max_temp_diff_from_avg.get()))) # ** displays all graphs at once.
+        button4 = ctk.CTkButton(
+            button_frame, 
+            text='Process',
+            width=BUTTONS_WIDTH, 
+            command=lambda: self.process_oil_analysis(
+                app.datafiles['aimdata1']['dataframe'], 
+                app.datafiles['aimdata2']['dataframe']
+                )
+            ) # ** displays all graphs at once.
+        # button4.place(y=70, relx=.75, width=BUTTONS_WIDTH, anchor=tk.CENTER)
+        button4.grid(row=2, column=1)
 
         ## Statistics
-        self.inputpath1_label = tk.Label(info_frame, text='File 1: ', wraplength=450, justify=tk.LEFT)
+        self.inputpath1_label = ctk.CTkLabel(
+            info_frame, 
+            text='File 1: ', 
+            wraplength=450, 
+            justify=tk.LEFT
+            )
         self.inputpath1_label.place(y=10, x=10)
 
-        self.inputpath2_label = tk.Label(info_frame, text='File 2: ', wraplength=450, justify=tk.LEFT)
+        self.inputpath2_label = ctk.CTkLabel(
+            info_frame, 
+            text='File 2: ', 
+            wraplength=450, 
+            justify=tk.LEFT
+            )
         self.inputpath2_label.place(y=55, x=10)
 
-        stat1_label = tk.Label(info_frame, text=' ', wraplength=350, justify=tk.LEFT)
-        stat1_label.place(y=75, x=10)
+        stat1_label = ctk.CTkLabel(
+            info_frame, 
+            text='Mandatory columns:', 
+            wraplength=350, 
+            justify=tk.LEFT
+            )
+        stat1_label.place(y=95, x=10)
 
-        stat2_label = tk.Label(info_frame, text='Mandatory columns:', wraplength=350, justify=tk.LEFT)
-        stat2_label.place(y=95, x=10)
-
-        stat3_label = tk.Label(info_frame, text='Time, Distance, S8_RPM, S*eot, S8_ect1, S8_eop', wraplength=350, justify=tk.LEFT)
-        stat3_label.place(y=115, x=10)
+        stat2_label = ctk.CTkLabel(
+            info_frame, 
+            text='Time, Distance, S8_RPM, S8_eot, S8_ect1, S8_eop', 
+            wraplength=350,
+            justify=tk.LEFT
+            )
+        stat2_label.place(y=115, x=10)
 
     def process_oil_analysis(self, df1, df2):
         try:
@@ -589,8 +952,16 @@ class OilAnalysisPage(tk.Frame):
 
 class MainMenuButton():
     def __init__(self, parent, frame):
-        main_menu_btn = tk.Button(frame, text='Main Menu', command=lambda: app.switch_frame(MainMenuPage))
-        main_menu_btn.place(x=0, y=0)
+        main_menu_btn = ctk.CTkButton(
+            frame, 
+            text='Main Menu',
+            width=BUTTONS_WIDTH,
+            command=lambda: app.switch_frame(MainMenuPage)
+            )
+        # main_menu_btn.place(x=0, y=0)
+        main_menu_btn.grid(row=0, column=0, sticky='nw')
+        # cannot pack two items on same row
+        # **solution can be to create a 2 column grid for header_frame
 
         # Reset App() variables
         app.col_options_list = ['Columns'] # this will be the columns from input csv
@@ -608,8 +979,14 @@ class ExportButton():
     def __init__(self, parent, frame):
         self.parent = parent
 
-        export_button = tk.Button(frame, text='Export Data', command=lambda: self.export_df_to_csv())
-        export_button.pack(anchor='ne', side='top')
+        export_btn = ctk.CTkButton(
+            frame,
+            text='Export Data', 
+            width=BUTTONS_WIDTH,
+            command=lambda: self.export_df_to_csv()
+            )
+        # export_btn.pack(anchor='ne', side='top')
+        export_btn.grid(row=0, column=1, sticky='ne')        
 
     def export_df_to_csv(self):
         df = app.datafiles['analysis']['dataframe']
@@ -618,15 +995,25 @@ class ExportButton():
         if isinstance(df, pd.DataFrame):
             print(path)
             df.to_csv(path, index=False)
+            messagebox.showinfo(title='Information', message=f'File saved successfully:\n{path}')
         
         self.update_outputpath_label(path)
 
     def update_outputpath_label(self, path):
-        self.parent.outputpath_label['text'] = f'Output: {path}'
+        self.parent.outputpath_label.configure(text=f'Output: {path}')
 
 class TreeViewWidget(ttk.Treeview):
     def __init__(self, parent):
         ttk.Treeview.__init__(self, parent)
+
+        ## ** test other styles
+        style = ttk.Style(app)
+        style.theme_use('winnative')
+        style.configure('Treeview', background='#2b2b2b', 
+                        fieldbackground='#2b2b2b', foreground='white')
+        
+        # https://stackoverflow.com/questions/47642635/automatic-minimum-width-for-column-0-in-tkinter-treeview
+        style.configure('Treeview.Heading', font=(None, 10))
 
         self.place(relheight=1, relwidth=1)
         treescrolly = ttk.Scrollbar(self, orient='vertical', command=self.yview)
@@ -665,7 +1052,10 @@ def clear_treeview(trees, lables: list):
         return None
     else:
         for label in lables:
-            label['text'] = label['text'].split(':')[0] + ':'
+            # label['text'] = label['text'].split(':')[0] + ':' # for tkinter
+            leading_label = label.cget('text').split(':')[0] + ':'
+            label.configure(text=f'{leading_label}')
+
 
 if __name__ == '__main__':
     app = App()
