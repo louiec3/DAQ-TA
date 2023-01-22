@@ -21,9 +21,9 @@ timestamp = date.strftime('%m-%d-%Y_%H-%M-%S')
 
 # determine if application is a script file or frozen exe
 if getattr(sys, 'frozen', False):
-    script_path = os.path.dirname(sys.executable) + '\\'
+    script_path = os.path.dirname(os.path.dirname(sys.executable)) + '\\'
 elif __file__:
-    script_path = os.path.dirname(__file__) + '\\'
+    script_path = os.path.dirname(__file__)
 
 print(script_path)
 
