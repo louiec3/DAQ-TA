@@ -1,3 +1,15 @@
+###############################################################
+# DAQ TA
+# 
+# DAQ TA is a tool to automate the process of converting AiM 
+# files from Race Studio to generate statistics and graphs for 
+# certain tests.
+# 
+# Copyright (c) 2023 Louis Cundari III. All rights reserved.
+# Louis Cundari III
+# louiscundari3@outlook.com
+###############################################################
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

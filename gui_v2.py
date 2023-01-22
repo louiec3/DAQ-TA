@@ -1,11 +1,22 @@
+###############################################################
+# DAQ TA
+# 
+# DAQ TA is a tool to automate the process of converting AiM 
+# files from Race Studio to generate statistics and graphs for 
+# certain tests.
+# 
+# Copyright (c) 2023 Louis Cundari III. All rights reserved.
+# Louis Cundari III
+# louiscundari3@outlook.com
+###############################################################
+
 # Refer to this post to understand the foundation of the GUI code (object oriented programming with tkinter).
 # This will explain the purpose of the App class and the child Page classes.
 # https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
 
+import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-
-import customtkinter as ctk
 
 # https://github.com/TomSchimansky/CustomTkinter/wiki/Packaging
 # Look into https://nuitka.net/ for packaging

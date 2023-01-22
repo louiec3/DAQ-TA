@@ -1,9 +1,21 @@
-# File saving variables
+###############################################################
+# DAQ TA
+# 
+# DAQ TA is a tool to automate the process of converting AiM 
+# files from Race Studio to generate statistics and graphs for 
+# certain tests.
+# 
+# Copyright (c) 2023 Louis Cundari III. All rights reserved.
+# Louis Cundari III
+# louiscundari3@outlook.com
+###############################################################
+
 import os
 from os.path import dirname
 from datetime import datetime
 import sys
 
+# File saving variables
 date = datetime.now()
 timestamp = date.strftime('%m-%d-%Y_%H-%M-%S')
 

@@ -1,3 +1,15 @@
+###############################################################
+# DAQ TA
+# 
+# DAQ TA is a tool to automate the process of converting AiM 
+# files from Race Studio to generate statistics and graphs for 
+# certain tests.
+# 
+# Copyright (c) 2023 Louis Cundari III. All rights reserved.
+# Louis Cundari III
+# louiscundari3@outlook.com
+###############################################################
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -169,7 +181,7 @@ def plot_trackmap(df_data, df_sectors, var_col):
     plt.show()
 
     return fig
-    
+
 def init_sector_analysis(df_data, df_sectors, var_col, normalize_stationary_bool, rmv_stationary_bool):
     f.clear_plots()
     # Sector analysis by time interval
