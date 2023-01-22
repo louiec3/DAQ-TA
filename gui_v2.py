@@ -328,7 +328,7 @@ class SessionAnalysisPage(ctk.CTkFrame):
 
         self.checkbox_normalize = ctk.CTkCheckBox(
             button_frame, 
-            text='Normalize stationary\nvalues (description)',
+            text='Normalize stationary\nvalues',
             variable=app.normalize_stationary_bool, 
             onvalue=1, 
             offvalue=0, 
@@ -340,7 +340,7 @@ class SessionAnalysisPage(ctk.CTkFrame):
 
         self.checkbox_rmv_stationary = ctk.CTkCheckBox(
             button_frame, 
-            text='Remove stationary\nvalues (description)', 
+            text='Remove stationary\nvalues', 
             variable=app.rmv_stationary_bool, 
             onvalue=1, 
             offvalue=0, 
@@ -531,7 +531,7 @@ class SectorAnalysisPage(ctk.CTkFrame):
 
         self.checkbox_normalize = ctk.CTkCheckBox(
             button_frame, 
-            text='Normalize stationary\nvalues (description)',
+            text='Normalize stationary\nvalues',
             variable=app.normalize_stationary_bool, 
             onvalue=1, 
             offvalue=0, 
@@ -543,7 +543,7 @@ class SectorAnalysisPage(ctk.CTkFrame):
 
         self.checkbox_rmv_stationary = ctk.CTkCheckBox(
             button_frame, 
-            text='Remove stationary\nvalues (description)',
+            text='Remove stationary\nvalues',
             variable=app.rmv_stationary_bool, 
             onvalue=1, 
             offvalue=0, 
