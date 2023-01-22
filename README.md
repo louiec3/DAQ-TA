@@ -1,6 +1,6 @@
-UConn Formula SAE: Data Acquisition Statistics Automation Tool
+DAQ TA (Test Analysis/Automation/Assistant)
 
-Version 0.1.0
+Version 1.0.0
 
 Features:
 - Session Analysis
@@ -8,7 +8,7 @@ Features:
 - Coastdown Analysis
 - Limp Mode Analysis
 
-Demo:
+Demo (Visually different but functionally the same process):
 
 Session Analysis
 
