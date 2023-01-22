@@ -201,6 +201,14 @@ def var1_vs_var2_graph(df, x_col, y_col, plot_type, marker, single_plot_t_f):
         return None
 
 
+def clear_plots():
+    plt.cla()
+    plt.clf()
+    plt.close()
+
+    return None
+
+
 def subtract_car_weight(df, var_col):
     df_new = df[var_col] - c.CAR_WEIGHT
 

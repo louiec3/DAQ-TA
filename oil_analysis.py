@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 import constants as c
-from functions import custom_round
+import functions as f
 
 pd.set_option('mode.chained_assignment', None)
 
@@ -26,10 +26,10 @@ def split_laps(df):
 
 
 def round_limp_mode(df):
-    df[c.RPM_COL] = df[c.RPM_COL].apply(lambda x: custom_round(x, 100))
-    df[c.OIL_PRESS_COL] = df[c.OIL_PRESS_COL].apply(lambda x: custom_round(x, .25))
-    df[c.OIL_TEMP_COL] = df[c.OIL_TEMP_COL].apply(lambda x: custom_round(x, 1))
-    df[c.COOLANT_TEMP_COL] = df[c.COOLANT_TEMP_COL].apply(lambda x: custom_round(x, 1))
+    df[c.RPM_COL] = df[c.RPM_COL].apply(lambda x: f.custom_round(x, 100))
+    df[c.OIL_PRESS_COL] = df[c.OIL_PRESS_COL].apply(lambda x: f.custom_round(x, .25))
+    df[c.OIL_TEMP_COL] = df[c.OIL_TEMP_COL].apply(lambda x: f.custom_round(x, 1))
+    df[c.COOLANT_TEMP_COL] = df[c.COOLANT_TEMP_COL].apply(lambda x: f.custom_round(x, 1))
 
     return df
     
@@ -89,6 +89,8 @@ def limp_mode_graph(df, x_col, y_col, plot_type, marker, session_name, color):
 
 
 def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
+    f.clear_plots()
+
     df_sessions_list = []
     for df in df_list:
         df = round_limp_mode(df)
@@ -153,9 +155,9 @@ def init_oil_analysis(df_list: list, max_oil_temp_diff: int):
     plt.figure('RPM vs. Oil Pressure')
     for df_session in df_sessions_list:
         limp_mode_graph(df_session, c.RPM_COL, c.OIL_PRESS_COL, plot_type='line', marker='none', session_name=c.GRAPH_LABELS_LIST[k], color=c.COLORS_LIST[k])
-        plt.xticks(np.arange(custom_round(min_rpm, 1000), custom_round(max_rpm, 1000), 500))
-        
         k+=1
+
+    plt.xticks(np.arange(f.custom_round(min_rpm-1000, 1000-500), f.custom_round(max_rpm+1000, 1000), 500))
     
     # Loop sessions to group rpm values by average oil pressure
     sessions_groupby_rpm_list = []

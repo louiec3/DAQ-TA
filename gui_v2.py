@@ -220,7 +220,7 @@ class MainMenuPage(ctk.CTkFrame):
         # btn5 = ctk.CTkButton(container, text='Oil Analysis', command=lambda: parent.switch_frame(OilAnalysisPage))
         appearance_mode_optionemenu = ctk.CTkOptionMenu(
             container, 
-            values=['Light', 'Dark', 'System'],
+            values=['System', 'Dark', 'Light'],
             command=lambda x: app.change_appearance_mode(x)
             )
         appearance_mode_optionemenu.place(x=0, y=0)
@@ -915,27 +915,19 @@ class OilAnalysisPage(ctk.CTkFrame):
 
         stat1_label = ctk.CTkLabel(
             info_frame, 
-            text=' ', 
-            wraplength=350, 
-            justify=tk.LEFT
-            )
-        stat1_label.place(y=75, x=10)
-
-        stat2_label = ctk.CTkLabel(
-            info_frame, 
             text='Mandatory columns:', 
             wraplength=350, 
             justify=tk.LEFT
             )
-        stat2_label.place(y=95, x=10)
+        stat1_label.place(y=95, x=10)
 
-        stat3_label = ctk.CTkLabel(
+        stat2_label = ctk.CTkLabel(
             info_frame, 
             text='Time, Distance, S8_RPM, S8_eot, S8_ect1, S8_eop', 
             wraplength=350,
             justify=tk.LEFT
             )
-        stat3_label.place(y=115, x=10)
+        stat2_label.place(y=115, x=10)
 
     def process_oil_analysis(self, df1, df2):
         try:
