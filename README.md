@@ -12,20 +12,24 @@ Demo (Visually different but functionally the same process):
 
 Session Analysis
 
-https://user-images.githubusercontent.com/7331983/212153356-19950272-ccf9-41d8-b0a4-391c6fb3f648.mp4
+
+https://user-images.githubusercontent.com/7331983/214446627-b0cace0e-898e-4139-b312-50bccef61f17.mp4
+
 
 Sector Analysis
 
-https://user-images.githubusercontent.com/7331983/212153473-69a45f82-a55a-4219-9513-c92f0872fe05.mp4
+
+https://user-images.githubusercontent.com/7331983/214446667-344b2d06-46d6-417c-9dea-af28bf2aac00.mp4
+
 
 Coastdown Analysis
 
-https://user-images.githubusercontent.com/7331983/212153416-a676b144-4846-45fa-854a-fd1b397f59f3.mp4
+
+https://user-images.githubusercontent.com/7331983/214446688-ff69db30-a89e-4318-9edd-893db0802615.mp4
+
 
 Limp Mode Analysis
 
-https://user-images.githubusercontent.com/7331983/212154177-25b0c262-3931-431c-8c91-20b425e7736c.mp4
 
-
-
+https://user-images.githubusercontent.com/7331983/214446712-d9d13711-6e7e-4f85-9288-2767db537c4d.mp4
 
